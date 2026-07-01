@@ -9,30 +9,38 @@
 <script>
   // Tema "Caldo diurno": rimappo le scale neutre (slate) e gli accenti su una palette
   // chiara e calda. L'app resta scritta con le stesse classi: cambia solo la palette.
+  // Sistema tipografico su tinta unita. Nessuna superficie: bg #F1EDE4 ovunque.
+  // Testo su due livelli neutri (near-black, taupe) + un accento terracotta. Tre colori, in tinta.
   tailwind.config = { theme: { extend: { colors: {
-    slate: { 50:'#201D18', 100:'#2A2721', 200:'#3A362E', 300:'#574F42', 400:'#6F6858',
-             500:'#8B8475', 600:'#B7AD98', 700:'#E7E0D0', 800:'#FBF8F1', 900:'#F1EDE4', 950:'#EAE4D8' },
-    emerald: { 50:'#FBEEE8', 100:'#6B2A15', 200:'#7A3218', 300:'#7A3218', 400:'#9E4526',
-               500:'#B4522F', 600:'#A9481F', 700:'#8C3B1A', 800:'#843A22', 900:'#7A3620' },
-    amber: { 50:'#FAF0D8', 100:'#5E3F0E', 200:'#6B4810', 300:'#75500F', 400:'#8A5F14',
-             500:'#A5731A', 600:'#C68A22', 700:'#A5731A', 800:'#6B4810', 900:'#CFA23A' },
-    orange: { 50:'#FAECE0', 100:'#5E2D0E', 200:'#6E360F', 300:'#7E3F13', 400:'#8E4A18',
-              500:'#A85422', 600:'#B0561F', 700:'#A85830', 800:'#6E360F', 900:'#CD8150' },
-    red: { 50:'#FAEAE6', 100:'#5E1F19', 200:'#6E241C', 300:'#7E2A22', 400:'#9E362C',
-           500:'#B84034', 600:'#B84034', 700:'#8A2E24', 800:'#6E241C', 900:'#D69289' },
-    sky: { 50:'#EEF1E7', 100:'#333B28', 200:'#3E4A30', 300:'#454F36', 400:'#57634A',
-           500:'#66744F', 600:'#6E7B5E', 700:'#5E6B49', 800:'#49543B', 900:'#AEB99A' }
+    slate: { 50:'#2A2721', 100:'#2A2721', 200:'#2A2721', 300:'#6E6252', 400:'#6E6252',
+             500:'#6E6252', 600:'#6E6252', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4', 950:'#F1EDE4' },
+    emerald: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
+               500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
+    amber: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
+             500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
+    orange: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
+              500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
+    sky: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
+           500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
+    red: { 50:'#6E6252', 100:'#6E6252', 200:'#6E6252', 300:'#6E6252', 400:'#6E6252',
+           500:'#6E6252', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' }
+  }, fontFamily: {
+    serif: ['"Times New Roman"','Times','serif'],
+    sans: ['ui-sans-serif','-apple-system','system-ui','"Helvetica Neue"','Arial','sans-serif']
   } } } };
 </script>
 <style>
   /* Minimi essenziali: safe-area, reset input, flash timer, testo chiaro sugli accenti pieni */
   html, body { -webkit-text-size-adjust: 100%; }
-  body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+  body { font-family: 'Times New Roman', Times, serif;
+         padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
          padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
          -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+  /* Le etichette-guida e l'interfaccia usano un sans di sistema: distinguono l'UI dal contenuto */
+  .uppercase, nav, input, textarea, .ui-sans { font-family: ui-sans-serif, -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif; }
   input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; }
-  @keyframes flashbg { 0%,100% { background-color: #BE5B38; } 50% { background-color: #7A3A22; } }
+  @keyframes flashbg { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
   .timer-flash { animation: flashbg 0.5s steps(1) infinite; }
   button { touch-action: manipulation; }
   .noscroll { overscroll-behavior: contain; }
@@ -41,15 +49,13 @@
   .view-anim { animation: viewIn .24s cubic-bezier(.2,.65,.2,1); }
   @keyframes pressPop { from { transform: scale(.97); } to { transform: none; } }
   .press-pop { animation: pressPop .18s ease-out; }
-  /* Stacco delle superfici tramite ombra morbida, non tramite linee */
-  .surface { box-shadow: 0 1px 2px rgba(70,56,42,.05), 0 6px 16px rgba(70,56,42,.05); }
-  .surface-soft { box-shadow: 0 1px 3px rgba(70,56,42,.045); }
-  .nav-shadow { box-shadow: 0 -1px 20px rgba(70,56,42,.07); }
+  /* Nessuna superficie: la gerarchia è tipografica. Le ombre residue nel markup sono annullate. */
+  .surface, .surface-soft, .nav-shadow { box-shadow: none; }
   /* Transizioni leggere sugli elementi interattivi */
-  button, [data-start] { transition: background-color .15s ease, transform .12s ease; }
-  /* Sugli accenti pieni scuri (terracotta·ruggine) il testo resta crema; l'ocra chiaro usa testo scuro */
-  [class*="bg-emerald-6"],[class*="bg-emerald-7"],[class*="bg-orange-6"]{ color:#FBF3EC; }
-  /* Il campo di input eredita il testo scuro del tema */
+  button { transition: opacity .15s ease, transform .12s ease; }
+  button:active { opacity: .55; }
+  /* I "bottoni pieni" diventano testo-azione in accento su tinta unita, senza contenitore */
+  [class*="bg-emerald-6"],[class*="bg-emerald-7"],[class*="bg-amber-6"],[class*="bg-orange-6"]{ color:#A9481F; font-weight:700; }
   input, textarea { color:#2A2721; }
 </style>
 </head>
@@ -57,22 +63,22 @@
 
 <!-- Badge timer fisso in alto -->
 <div id="timerBar" class="hidden fixed top-0 left-0 right-0 z-50" style="padding-top: env(safe-area-inset-top)">
-  <div id="timerInner" class="mx-auto max-w-md m-2 rounded-lg px-4 py-3 flex items-center justify-between bg-emerald-700 shadow-lg">
-    <span class="text-sm font-medium opacity-90">Recupero</span>
+  <div id="timerInner" class="mx-auto max-w-md m-2 px-4 py-3 flex items-center justify-between bg-emerald-700">
+    <span class="text-sm font-medium">Recupero</span>
     <span id="timerCount" class="text-2xl font-bold tabular-nums">0:00</span>
-    <button id="timerSkip" class="text-sm bg-black/30 rounded px-3 py-1">Riparti</button>
+    <button id="timerSkip" class="text-sm px-3 py-1">Riparti</button>
   </div>
 </div>
 
-<div id="app" class="mx-auto max-w-md px-3 pb-24 pt-3"></div>
+<div id="app" class="mx-auto max-w-md px-5 pb-28 pt-7"></div>
 
 <!-- Nav in fondo -->
 <nav class="fixed bottom-0 left-0 right-0 bg-slate-800 nav-shadow z-40" style="padding-bottom: env(safe-area-inset-bottom)">
-  <div class="mx-auto max-w-md grid grid-cols-4 text-center text-xs">
-    <button data-nav="allena" class="navbtn py-3">Allena</button>
-    <button data-nav="storico" class="navbtn py-3">Storico</button>
-    <button data-nav="record" class="navbtn py-3">Record</button>
-    <button data-nav="impostazioni" class="navbtn py-3">Config</button>
+  <div class="mx-auto max-w-md grid grid-cols-4 text-center text-sm">
+    <button data-nav="allena" class="navbtn py-3.5">Allena</button>
+    <button data-nav="storico" class="navbtn py-3.5">Storico</button>
+    <button data-nav="record" class="navbtn py-3.5">Record</button>
+    <button data-nav="impostazioni" class="navbtn py-3.5">Config</button>
   </div>
 </nav>
 
@@ -431,7 +437,7 @@ function render(){
   let top = '';
   if(S.saveError){
     top += `<div class="mb-3 rounded-lg bg-red-900/50 p-2 text-xs text-red-200">
-      ⚠ Non sono riuscito a salvare su questo dispositivo. Esporta un backup prima di continuare, così non perdi nulla.</div>`;
+      Non sono riuscito a salvare su questo dispositivo. Esporta un backup prima di continuare, così non perdi nulla.</div>`;
   }
   top += `<div id="flashHint" class="hidden mb-3 rounded-lg bg-amber-800/60 p-2 text-xs text-amber-100"></div>`;
 
@@ -492,42 +498,39 @@ function readinessCard(){
     slate:['bg-slate-800','border-slate-700','text-slate-200'],
   };
   const [bg,,tc] = tones[r.tone] || tones.slate;
-  const soft = r.tone==='slate' ? ' surface-soft' : '';
-  // protagonista della home: lo stato di oggi con contrasto di scala, colore come area
-  return `<div class="mb-5 rounded-2xl ${bg}${soft} px-4 py-4">
-    <div class="text-xs uppercase tracking-widest text-slate-500 mb-1">Oggi</div>
-    <div class="text-4xl font-bold ${tc} leading-none tracking-tight">${r.state}</div>
-    <div class="text-sm text-slate-400 mt-2 leading-snug">${r.msg}</div>
+  // protagonista della home: lo stato di oggi, gigante. Niente contenitore: solo tipografia e spazio.
+  return `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-2">Oggi</div>
+    <div class="text-5xl font-bold ${tc} leading-none tracking-tight">${r.state}</div>
+    <div class="text-base text-slate-400 mt-3 leading-snug">${r.msg}</div>
   </div>`;
 }
 
 function viewAllena(){
-  let h = `<h1 class="text-2xl font-bold mb-3 tracking-tight">Allena</h1>`;
-  h += readinessCard();
-  h += `<button data-act="open-theory" class="w-full mb-4 rounded-xl bg-slate-800 surface-soft px-3 py-2.5 flex items-center justify-between active:bg-slate-700">
-    <span class="flex items-center gap-2"><span class="text-lg">📖</span><span class="text-sm font-medium text-slate-100">Il metodo · teoria e schede</span></span>
-    <span class="text-slate-500">›</span>
+  let h = readinessCard();
+  h += `<button data-act="open-theory" class="w-full flex items-center justify-between py-3 mb-9 text-left active:opacity-55">
+    <span class="text-base text-slate-100">Il metodo</span>
+    <span class="text-slate-500 text-lg">›</span>
   </button>`;
   if(S.active){
     const r = S.routines.find(x=>x.id===S.active.routineId);
-    h += `<div class="mb-4 rounded-xl bg-amber-900/40 p-3">
-      <div class="text-sm font-semibold text-amber-200">Sessione in corso</div>
-      <div class="text-xs text-amber-100/80 mt-0.5">${esc(S.active.title||(r?r.nome:''))}</div>
-      <div class="mt-2 flex gap-2">
-        <button data-act="resume" class="flex-1 bg-emerald-600 rounded-lg py-2.5 text-sm font-medium">Riprendi</button>
-        <button data-act="discard" class="bg-slate-700 rounded-lg py-2.5 px-3 text-sm">Annulla</button>
+    h += `<div class="mb-9">
+      <div class="text-xs uppercase tracking-widest text-emerald-400 mb-2">Sessione in corso</div>
+      <div class="text-lg font-semibold text-slate-100 leading-tight">${esc(S.active.title||(r?r.nome:''))}</div>
+      <div class="mt-3 flex gap-6">
+        <button data-act="resume" class="text-base font-bold text-emerald-400 active:opacity-55">Riprendi</button>
+        <button data-act="discard" class="text-base text-slate-500 active:opacity-55">Annulla</button>
       </div></div>`;
   }
   const cavci = S.routines.filter(r=>r.kind==='struttura');
   const manuale = S.routines.find(r=>r.kind==='manuale');
   const reset = S.routines.find(r=>r.kind==='reset') || S.routines.find(r=>r.id==='p0');
 
-  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2 px-1">Scegli una tappa</div>`;
-  h += `<div class="rounded-2xl bg-slate-800 surface-soft overflow-hidden">`;
-  const tappaRow = (id, variant, titolo, sub, nEx) => `<button data-start="${id}" data-variant="${variant}" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-slate-700">
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Scegli una tappa</div>`;
+  const tappaRow = (id, variant, titolo, sub, nEx) => `<button data-start="${id}" data-variant="${variant}" class="w-full flex items-center justify-between gap-4 py-4 text-left active:opacity-55">
       <span class="min-w-0">
-        <span class="block font-semibold text-sm leading-tight">${titolo}</span>
-        <span class="block text-xs text-slate-500 truncate mt-0.5">${sub}${nEx?` · ${nEx} es.`:''}</span>
+        <span class="block text-base font-medium leading-tight text-slate-100">${titolo}</span>
+        <span class="block text-sm text-slate-500 truncate mt-1">${sub}${nEx?` · ${nEx} es.`:''}</span>
       </span>
       <span class="text-slate-400 shrink-0 text-lg">›</span>
     </button>`;
@@ -545,7 +548,6 @@ function viewAllena(){
     const nex = (manuale.blocchi||[]).reduce((a,b)=>a+(b.ex||[]).length,0);
     h += tappaRow(manuale.id, 'manuale', `${manuale.n}. ${esc(manuale.nome)}`, esc(manuale.sub||''), nex);
   }
-  h += `</div>`;
   return h;
 }
 
@@ -561,57 +563,56 @@ function viewAnteprima(){
   const estMin = Math.max(5, Math.round(totalSets * 2)); // stima morbida
   const hasVarianti = r.kind!=='manuale' && (r.exAttrezzi||[]).length>0 && (r.exCorpoLibero||[]).length>0;
 
-  let h = `<button data-act="preview-back" class="flex items-center gap-1 text-sm text-slate-500 mb-3 -ml-1 px-1 py-1">← Tappe</button>`;
-  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-1">${r.kind==='manuale'?'Manuale tecnico':(r.n?('Tappa '+r.n):'Sessione')}</div>`;
-  h += `<h1 class="text-2xl font-bold leading-tight mb-1 tracking-tight">${esc(A?A.title:r.nome)}</h1>`;
-  if(r.sub) h += `<p class="text-sm text-slate-400 mb-4 leading-snug">${esc(r.sub)}</p>`;
+  let h = `<button data-act="preview-back" class="text-sm text-slate-500 mb-6 active:opacity-55">← Tappe</button>`;
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2">${r.kind==='manuale'?'Manuale tecnico':(r.n?('Tappa '+r.n):'Sessione')}</div>`;
+  h += `<h1 class="text-3xl font-bold leading-tight tracking-tight">${esc(A?A.title:r.nome)}</h1>`;
+  if(r.sub) h += `<p class="text-base text-slate-400 mt-2 leading-snug">${esc(r.sub)}</p>`;
 
-  // protagonista: quanti esercizi, con durata stimata
-  h += `<div class="rounded-2xl bg-slate-800 surface px-4 py-4 mb-4 flex items-end justify-between">
+  // protagonista: quanti esercizi, con durata stimata di supporto
+  h += `<div class="flex items-end justify-between mt-8 mb-9">
     <div>
-      <div class="text-[3.25rem] font-bold tabular-nums leading-none tracking-tight">${items.length}</div>
-      <div class="text-sm text-slate-500 mt-1">esercizi</div>
+      <div class="text-6xl font-bold tabular-nums leading-none tracking-tight">${items.length}</div>
+      <div class="text-sm text-slate-500 mt-2">esercizi</div>
     </div>
     <div class="text-right">
-      <div class="text-2xl font-bold tabular-nums leading-none">~${estMin}′</div>
-      <div class="text-xs text-slate-500 mt-1">${totalSets} serie totali</div>
+      <div class="text-3xl font-bold tabular-nums leading-none text-slate-400">~${estMin}′</div>
+      <div class="text-sm text-slate-500 mt-2">${totalSets} serie</div>
     </div>
   </div>`;
 
-  // scelta variante (se disponibile): attrezzi / corpo libero
+  // scelta variante: due voci testuali, l'attiva in accento
   if(hasVarianti){
-    const opt = (v,label,n)=>`<button data-act="preview-variant" data-variant="${v}" class="flex-1 rounded-xl min-h-[46px] text-sm font-medium ${p.variant===v?'bg-emerald-600':'bg-slate-800 surface-soft text-slate-500'}">${label} <span class="opacity-70">${n}</span></button>`;
-    h += `<div class="flex gap-2 mb-4">
+    const opt = (v,label,n)=>`<button data-act="preview-variant" data-variant="${v}" class="text-base ${p.variant===v?'font-bold text-emerald-400':'text-slate-500'} active:opacity-55">${label} <span class="text-sm ${p.variant===v?'text-emerald-400':'text-slate-500'}">${n}</span></button>`;
+    h += `<div class="flex gap-8 mb-9">
       ${opt('attrezzi','Attrezzi',(r.exAttrezzi||[]).length)}
       ${opt('corpolibero','Corpo libero',(r.exCorpoLibero||[]).length)}
     </div>`;
   }
 
-  // lista esercizi: righe pulite, separate da spazio, senza divisori
-  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2 px-1">Cosa farai</div>`;
-  h += `<div class="rounded-2xl bg-slate-800 surface-soft px-1 py-1 mb-5">`;
+  // cosa farai: lista in scala, separata da spazio
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Cosa farai</div>`;
+  h += `<div class="mb-10">`;
   items.forEach((it,i)=>{
     let param='';
     if(it.mode==='peso') param = it.targetW>0 ? `${it.plannedSets}×${it.targetR} · ${formatKg(it.targetW)}kg` : `${it.plannedSets}×${it.targetR}`;
     else if(it.mode==='reps') param = `${it.plannedSets}×${it.targetR}`;
     else param = `${it.plannedSets}×${fmtDur(it.targetSec)}`;
     const hasTech = !!(THEORY_DATA.ex && THEORY_DATA.ex[it.id]);
-    h += `<button ${hasTech?`data-exview="${esc(it.id)}"`:'disabled'} class="w-full flex items-center gap-3 px-3 py-2.5 text-left ${hasTech?'active:bg-slate-700 rounded-xl':''}">
-      <span class="w-6 text-center text-sm text-slate-500 tabular-nums shrink-0">${i+1}</span>
+    h += `<button ${hasTech?`data-exview="${esc(it.id)}"`:'disabled'} class="w-full flex items-baseline gap-3 py-3 text-left active:opacity-55">
+      <span class="w-5 text-sm text-slate-500 tabular-nums shrink-0">${i+1}</span>
       <span class="flex-1 min-w-0">
-        <span class="block text-sm font-medium leading-tight truncate">${esc(it.nome)}</span>
-        <span class="block text-xs text-slate-500 tabular-nums">${param}</span>
+        <span class="block text-base font-medium leading-tight truncate text-slate-100">${esc(it.nome)}</span>
+        <span class="block text-sm text-slate-500 tabular-nums mt-0.5">${param}</span>
       </span>
-      ${hasTech?'<span class="text-xs text-emerald-400 shrink-0">scheda ›</span>':''}
+      ${hasTech?'<span class="text-sm text-emerald-400 shrink-0">scheda ›</span>':''}
     </button>`;
-    if(i<items.length-1) h += `<div class="h-px bg-slate-900/0 mx-3"></div>`;
   });
-  if(!items.length) h += `<div class="px-3 py-4 text-sm text-slate-500 text-center">Nessun esercizio in questa variante.</div>`;
+  if(!items.length) h += `<div class="py-4 text-base text-slate-500">Nessun esercizio in questa variante.</div>`;
   h += `</div>`;
 
   // avvio esplicito: il momento in cui decidi tu
-  h += `<button data-act="preview-start" class="w-full bg-emerald-600 active:bg-emerald-700 rounded-2xl py-5 text-lg font-bold press-pop" ${items.length?'':'disabled'}>Inizia sessione</button>`;
-  h += `<div class="text-center text-xs text-slate-500 mt-2 mb-2">Peso e ripetizioni li aggiusti serie per serie, durante l'allenamento.</div>`;
+  h += `<button data-act="preview-start" class="text-2xl font-bold text-emerald-400 py-3 press-pop active:opacity-55" ${items.length?'':'disabled'}>Inizia sessione →</button>`;
+  h += `<div class="text-sm text-slate-500 mt-3">Peso e ripetizioni li aggiusti serie per serie, durante l'allenamento.</div>`;
   return h;
 }
 
@@ -713,48 +714,48 @@ function viewSessione(){
       </div></div>`;
   }
 
-  // nome esercizio: riga leggera, non compete col numero
-  h += `<div class="flex items-start justify-between gap-2 mb-2 px-1">
+  // nome esercizio: voce, con "Tecnica" come testo-azione
+  h += `<div class="flex items-start justify-between gap-3 mb-8">
     <div class="min-w-0">
-      <div class="font-bold text-lg leading-tight">${esc(it.nome)}</div>
-      <div class="text-xs text-slate-500 mt-0.5 truncate">${esc(e.muscoli||'')}</div>
+      <div class="text-xl font-bold leading-tight text-slate-100">${esc(it.nome)}</div>
+      <div class="text-sm text-slate-500 mt-1 truncate">${esc(e.muscoli||'')}</div>
     </div>
-    ${THEORY_DATA.ex[it.id] ? `<button data-act="ex-tech" class="shrink-0 text-xs bg-slate-700 rounded-full px-3 py-1.5 text-emerald-400 font-medium">Tecnica</button>` : ''}
+    ${THEORY_DATA.ex[it.id] ? `<button data-act="ex-tech" class="shrink-0 text-sm text-emerald-400 font-medium active:opacity-55">Tecnica</button>` : ''}
   </div>`;
 
-  // PROTAGONISTA: il valore che stai per fare, con contrasto di scala
-  h += `<div class="rounded-2xl bg-slate-800 surface-soft px-4 py-5 mb-2">`;
+  // PROTAGONISTA: il valore che stai per fare, gigante, senza contenitore
+  h += `<div class="mb-6">`;
   if(it.mode==='peso'){
     h += heroStepper(formatKg(it.targetW), 'kg', 'w-dec', 'w-inc');
-    h += `<div class="flex items-center justify-center gap-5 mt-4">
-      <button data-act="r-dec" class="w-11 h-11 shrink-0 rounded-full bg-slate-700 text-xl font-bold flex items-center justify-center leading-none">−</button>
-      <div class="text-center leading-none"><span id="valR" class="text-3xl font-bold tabular-nums">${it.targetR}</span><span class="text-sm text-slate-400"> rip.</span></div>
-      <button data-act="r-inc" class="w-11 h-11 shrink-0 rounded-full bg-slate-700 text-xl font-bold flex items-center justify-center leading-none">+</button>
+    h += `<div class="flex items-center justify-center gap-8 mt-6">
+      <button data-act="r-dec" class="w-10 py-2 shrink-0 text-2xl text-slate-500 leading-none active:opacity-55">−</button>
+      <div class="text-center leading-none"><span id="valR" class="text-4xl font-bold tabular-nums">${it.targetR}</span><span class="text-base text-slate-400"> rip.</span></div>
+      <button data-act="r-inc" class="w-10 py-2 shrink-0 text-2xl text-slate-500 leading-none active:opacity-55">+</button>
     </div>`;
   } else if(it.mode==='reps'){
     h += heroStepper(it.targetR, 'rip.', 'r-dec', 'r-inc');
   } else {
     h += heroStepper(it.targetSec, 'sec', 'sec-dec', 'sec-inc');
-    h += `<div class="text-center text-xs text-slate-500 mt-3">Countdown di ${fmtDur(it.targetSec)} · parte al tocco</div>`;
+    h += `<div class="text-center text-sm text-slate-500 mt-4">Countdown di ${fmtDur(it.targetSec)} · parte al tocco</div>`;
   }
   h += `</div>`;
 
-  // dettagli tecnici: gerarchia minore (chip leggeri sotto il protagonista)
+  // dettagli tecnici: sottovoce, gerarchia minore
   const det = [];
   const last = lastLoggedFor(it.id);
   if(last){
-    if(it.mode==='peso') det.push(`Ultima: ${formatKg(last.w)}×${last.r}`);
-    else if(it.mode==='reps') det.push(`Ultima: ${last.r} rip.`);
-    else det.push(`Ultima: ${fmtDur(last.value||last.r)}`);
+    if(it.mode==='peso') det.push(`Ultima ${formatKg(last.w)}×${last.r}`);
+    else if(it.mode==='reps') det.push(`Ultima ${last.r} rip.`);
+    else det.push(`Ultima ${fmtDur(last.value||last.r)}`);
   }
   det.push(`Serie ${it.doneSets.length}/${it.plannedSets}`);
   if(it.mode==='peso'){
     const pm = plateMode(e);
-    if(pm){ const calc=calcPlates(it.targetW, pm==='bilanciere'?S.config.barWeight:0, S.config.plates, pm); det.push(`🏋 ${platesToText(calc)}${calc.achievable?'':' ⚠'}`); }
+    if(pm){ const calc=calcPlates(it.targetW, pm==='bilanciere'?S.config.barWeight:0, S.config.plates, pm); det.push(`${platesToText(calc)}`); }
     if(it.targetW>0 && it.targetR>0) det.push(`1RM ${formatKg(estimate1RM(it.targetW,it.targetR))}kg`);
   }
-  h += `<div class="flex flex-wrap gap-x-3 gap-y-1 px-1 mb-3 text-xs text-slate-500">`;
-  det.forEach((d,i)=> h += `<span>${d}</span>${i<det.length-1?'<span class="text-slate-600">·</span>':''}`);
+  h += `<div class="flex flex-wrap justify-center gap-x-3 gap-y-1 mb-8 text-sm text-slate-500">`;
+  det.forEach((d,i)=> h += `<span>${d}</span>${i<det.length-1?'<span class="text-slate-500">·</span>':''}`);
   h += `</div>`;
 
   // RPE
@@ -764,12 +765,12 @@ function viewSessione(){
   const lastDone = it.doneSets[it.doneSets.length-1];
   if(lastDone && lastDone.pr){
     const txt = lastDone.pr.kind==='1rm' ? `Nuovo primato personale — ${formatKg(lastDone.pr.value)}kg stimati` : `Nuovo primato — ${lastDone.pr.value} ripetizioni`;
-    h += `<div class="mb-3 rounded-lg bg-emerald-900/20 p-2 text-sm text-emerald-300 text-center font-semibold">🏆 ${txt}. Hai spostato un limite.</div>`;
+    h += `<div class="mb-3 rounded-lg bg-emerald-900/20 p-2 text-sm text-emerald-300 text-center font-semibold">${txt}. Hai spostato un limite.</div>`;
   }
 
-  // bottone Serie Completata
-  h += `<button data-act="done-set" class="w-full bg-emerald-600 active:bg-emerald-700 rounded-2xl py-5 text-lg font-bold mb-3">
-    ${it.mode==='tempo' ? 'Avvia tenuta ▶' : 'Serie completata ✓'}</button>`;
+  // azione: testo grande in accento
+  h += `<button data-act="done-set" class="text-2xl font-bold text-emerald-400 py-4 mb-2 active:opacity-55">
+    ${it.mode==='tempo' ? 'Avvia tenuta →' : 'Serie completata →'}</button>`;
 
   // serie registrate
   if(it.doneSets.length){
@@ -779,9 +780,9 @@ function viewSessione(){
       let desc = it.mode==='peso' ? `${formatKg(d.w)}kg × ${d.r}` : (it.mode==='reps' ? `${d.r} rip.` : fmtDur(d.sec));
       h += `<div class="py-0.5">
         <div class="flex justify-between items-center">
-          <span>${d.pr?'🏆 ':''}Serie ${i+1}: ${desc}${d.rpe?` · RPE ${d.rpe}`:''}</span>
-          <span class="flex items-center gap-2">
-            <button data-noteedit="${i}" class="text-slate-400">${d.note?'📝':'✎'}</button>
+          <span>${d.pr?'<span class="text-emerald-400 font-semibold">PR</span> · ':''}Serie ${i+1}: ${desc}${d.rpe?` · RPE ${d.rpe}`:''}</span>
+          <span class="flex items-center gap-3">
+            <button data-noteedit="${i}" class="text-slate-400">${d.note?'modifica':'nota'}</button>
             <button data-delset="${i}" class="text-red-400/70">✕</button>
           </span>
         </div>`;
@@ -793,7 +794,7 @@ function viewSessione(){
           <button data-notecancel="1" class="bg-slate-700 rounded px-2 text-xs">✕</button>
         </div>`;
       } else if(d.note){
-        h += `<div class="text-slate-400 italic pl-2">📝 ${esc(d.note)}</div>`;
+        h += `<div class="text-slate-400 italic pl-2">${esc(d.note)}</div>`;
       }
       h += `</div>`;
     });
@@ -813,14 +814,14 @@ function viewSessione(){
   // lista esercizi sessione (jump, riordino via drag, aggiungi)
   h += `<div class="rounded-lg bg-slate-800/60 p-2 text-xs">
     <div class="flex justify-between items-center mb-1">
-      <span class="text-slate-400">Esercizi <span class="text-slate-600">· tieni premuto ⠿ e trascina</span></span>
+      <span class="text-slate-400">Esercizi <span class="text-slate-600">· tieni premuto ≡ e trascina</span></span>
       <button data-act="open-picker" class="text-emerald-400 font-medium">+ Aggiungi</button>
     </div>
     <div id="exList">`;
   A.items.forEach((x,i)=>{
     const on = i===A.curIdx;
     h += `<div class="flex items-center gap-1 rounded" data-exrow="${i}">
-      <button data-drag="${i}" class="text-slate-500 px-1 py-1 cursor-grab select-none" style="touch-action:none" aria-label="Trascina">⠿</button>
+      <button data-drag="${i}" class="text-slate-500 px-1 py-1 cursor-grab select-none" style="touch-action:none" aria-label="Trascina">≡</button>
       <button data-jump="${i}" class="flex-1 text-left py-1 px-2 rounded ${on?'bg-emerald-900/50 text-emerald-300':'text-slate-300'}">
         ${i+1}. ${esc(x.nome)} ${x.doneSets.length?`<span class="text-emerald-500">(${x.doneSets.length})</span>`:''}</button>
       ${x.added && !x.doneSets.length ? `<button data-rmex="${i}" class="text-red-400/60 px-2">✕</button>` : ''}
@@ -879,48 +880,46 @@ function viewRiepilogo(){
   const hasVol = su.volume > 0;
   const heroNum = hasVol ? formatKg(su.volume) : String(Math.round(su.durationSec/60));
   const heroUnit = hasVol ? 'kg sollevati' : 'minuti attivi';
-  let h = `<div class="text-center mt-2 mb-1">
-    <div class="text-xs uppercase tracking-widest text-emerald-400 font-semibold">Sessione salvata</div>
+  let h = `<div class="text-xs uppercase tracking-widest text-emerald-400 mb-6 mt-2">Sessione salvata</div>`;
+  // numero eroe: protagonista assoluto
+  h += `<div class="mb-8">
+    <div class="text-7xl font-bold tabular-nums leading-none tracking-tight">${heroNum}</div>
+    <div class="text-base text-slate-500 mt-2">${heroUnit}</div>
+    <div class="text-sm text-slate-500 mt-1">${esc(su.title)}</div>
   </div>`;
-  // numero eroe con contrasto di scala
-  h += `<div class="text-center mb-1">
-    <div class="text-[4.5rem] font-bold tabular-nums leading-none tracking-tight">${heroNum}</div>
-    <div class="text-sm text-slate-500 mt-1">${heroUnit}</div>
-  </div>`;
-  h += `<div class="text-center text-sm text-slate-400 mb-4 px-4">${esc(su.title)}</div>`;
-  h += `<div class="rounded-2xl bg-slate-800 surface-soft p-3 mb-4 text-center text-sm text-slate-200">${msg}</div>`;
-  // metriche minori: riga leggera, non quattro quadrati uguali
+  h += `<div class="text-base text-slate-400 leading-snug mb-9">${msg}</div>`;
+  // metriche minori: riga in scala, non quattro quadrati
   const mini = [];
   if(hasVol) mini.push([Math.round(su.durationSec/60)+'′','tempo']);
   else mini.push([formatKg(su.volume),'kg']);
   mini.push([su.exercises,'esercizi']);
   mini.push([su.sets,'serie']);
-  h += `<div class="flex justify-around items-baseline mb-4 px-2">`;
+  h += `<div class="flex gap-10 items-baseline mb-9">`;
   for(const [v,l] of mini){
-    h += `<div class="text-center"><div class="text-xl font-bold tabular-nums">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
+    h += `<div><div class="text-2xl font-bold tabular-nums text-slate-100">${v}</div><div class="text-sm text-slate-500 mt-0.5">${l}</div></div>`;
   }
   h += `</div>`;
   if(su.prs && su.prs.length){
-    h += `<div class="rounded-lg bg-emerald-900/30 p-3 mb-4">
-      <div class="text-sm font-semibold text-emerald-300 mb-1">🏆 Primati di oggi</div>`;
+    h += `<div class="mb-9">
+      <div class="text-xs uppercase tracking-widest text-emerald-400 mb-3">Primati di oggi</div>`;
     for(const p of su.prs){
       const v = p.kind==='1rm' ? `${formatKg(p.value)}kg 1RM` : `${p.value} rip.`;
-      h += `<div class="text-sm text-emerald-100 py-0.5">${esc(p.nome)} — <b>${v}</b></div>`;
+      h += `<div class="text-base text-slate-100 py-1">${esc(p.nome)} — <b class="text-emerald-400">${v}</b></div>`;
     }
     h += `</div>`;
   }
   if(su.notes && su.notes.length){
-    h += `<div class="rounded-lg bg-slate-800/60 p-3 mb-4">
-      <div class="text-sm font-semibold text-slate-300 mb-1">📝 Cosa hai annotato</div>`;
+    h += `<div class="mb-9">
+      <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Cosa hai annotato</div>`;
     for(const n of su.notes){
-      h += `<div class="text-xs text-slate-300 py-0.5"><span class="text-slate-500">${esc(n.nome)}:</span> ${esc(n.note)}</div>`;
+      h += `<div class="text-sm text-slate-400 py-1"><span class="text-slate-500">${esc(n.nome)}:</span> ${esc(n.note)}</div>`;
     }
     if(su.hasFatigue){
-      h += `<div class="text-xs text-amber-300/90 mt-2">Hai segnalato un po' di fatica. Il recupero fa parte del piano: se serve, i prossimi giorni tieni il carico morbido.</div>`;
+      h += `<div class="text-sm text-emerald-400 mt-3 leading-snug">Hai segnalato un po' di fatica. Il recupero fa parte del piano: se serve, i prossimi giorni tieni il carico morbido.</div>`;
     }
     h += `</div>`;
   }
-  h += `<button data-act="close-summary" class="w-full bg-emerald-700 rounded-lg py-3 font-semibold">Fatto</button>`;
+  h += `<button data-act="close-summary" class="text-xl font-bold text-emerald-400 py-3 active:opacity-55">Fatto →</button>`;
   return h;
 }
 function summaryStat(label, val){
@@ -1099,7 +1098,7 @@ function viewEsercizio(){
       <div class="space-y-2">`;
     for(const er of th.errori){
       h += `<div class="rounded-lg bg-amber-900/15/50 p-3">
-        <div class="text-sm text-amber-200">⚠ ${esc(er[0])}</div>
+        <div class="text-sm text-amber-200">${esc(er[0])}</div>
         <div class="text-xs text-slate-300 mt-0.5">→ ${esc(er[1])}</div></div>`;
     }
     h += `</div></div>`;
@@ -1128,24 +1127,25 @@ function stepperBlock(label, val, decId, incId, infoId){
       <button data-act="${incId}" class="flex-1 min-h-[48px] bg-slate-700 rounded-lg text-xl font-bold">+</button>
     </div></div>`;
 }
-// blocco "protagonista": numero grande con contrasto di scala, controlli circolari ai lati
+// blocco "protagonista": numero gigante, controlli come glifi ai lati
 function heroStepper(val, unit, decId, incId){
   const key = decId.split('-')[0].toUpperCase();
-  return `<div class="flex items-center gap-3">
-    <button data-act="${decId}" class="w-14 h-14 shrink-0 rounded-full bg-slate-700 text-3xl font-bold flex items-center justify-center leading-none">−</button>
-    <div class="flex-1 flex items-baseline justify-center gap-1.5 min-w-0">
-      <span id="val${key}" class="text-[3.75rem] font-bold tabular-nums leading-none tracking-tight">${val}</span>
-      <span class="text-lg text-slate-400 font-medium shrink-0">${unit}</span>
+  return `<div class="flex items-center gap-4">
+    <button data-act="${decId}" class="w-12 py-3 shrink-0 text-4xl text-slate-500 leading-none active:opacity-55">−</button>
+    <div class="flex-1 flex items-baseline justify-center gap-2 min-w-0">
+      <span id="val${key}" class="text-6xl font-bold tabular-nums leading-none tracking-tight">${val}</span>
+      <span class="text-xl text-slate-400 font-medium shrink-0">${unit}</span>
     </div>
-    <button data-act="${incId}" class="w-14 h-14 shrink-0 rounded-full bg-slate-700 text-3xl font-bold flex items-center justify-center leading-none">+</button>
+    <button data-act="${incId}" class="w-12 py-3 shrink-0 text-4xl text-slate-500 leading-none active:opacity-55">+</button>
   </div>`;
 }
 function rpeBlock(it){
-  let h = `<div class="mb-3"><div class="text-xs text-slate-500 mb-1">RPE · sforzo percepito <span class="text-slate-400">(regola il recupero)</span></div>
-    <div class="grid grid-cols-6 gap-1.5">`;
+  let h = `<div class="mb-8">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">RPE · sforzo percepito</div>
+    <div class="flex justify-between items-center">`;
   for(let v=5; v<=10; v++){
     const on = it.rpe===v;
-    h += `<button data-rpe="${v}" class="rounded-lg min-h-[44px] text-sm font-medium ${on?'bg-emerald-600 font-bold':'bg-slate-700'}">${v}</button>`;
+    h += `<button data-rpe="${v}" class="min-h-[44px] px-2 tabular-nums active:opacity-55 ${on?'text-3xl font-bold text-emerald-400':'text-lg text-slate-500'}">${v}</button>`;
   }
   h += `</div></div>`;
   return h;
@@ -1156,7 +1156,7 @@ function plateHint(it, e){
   const calc = calcPlates(it.targetW, mode==='bilanciere'?S.config.barWeight:0, S.config.plates, mode);
   const txt = platesToText(calc);
   const warn = calc.achievable ? '' : ' <span class="text-amber-400">(carico non esatto con i dischi impostati)</span>';
-  return `<div class="rounded bg-slate-900 px-2 py-1.5 text-xs text-emerald-300">🏋️ ${txt}${warn}</div>`;
+  return `<div class="rounded bg-slate-900 px-2 py-1.5 text-xs text-emerald-300">️ ${txt}${warn}</div>`;
 }
 function oneRMHint(it){
   if(!(it.targetW>0 && it.targetR>0)) return '';
@@ -1167,47 +1167,46 @@ function oneRMHint(it){
 
 // -------- VIEW: Storico --------
 function viewStorico(){
-  let h = `<h1 class="text-lg font-bold mb-3">Storico</h1>`;
-  if(!S.sessions.length) return h + `<p class="text-sm text-slate-400">Ancora nessuna sessione. Si comincia quando vuoi.</p>`;
+  let h = `<h1 class="text-3xl font-bold mb-8 tracking-tight">Storico</h1>`;
+  if(!S.sessions.length) return h + `<p class="text-base text-slate-400">Ancora nessuna sessione. Si comincia quando vuoi.</p>`;
   const sorted = [...S.sessions].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  h += `<div class="space-y-2">`;
   for(const s of sorted.slice(0,80)){
     const d = fmtDate(s.date);
     const vol = s.volume!=null ? s.volume : sessionVolume(s);
     const nex = (s.items||[]).length;
     const open = S.expandedSession === s.id;
-    h += `<div class="rounded-lg bg-slate-800 surface-soft p-3">
-      <button data-expand="${s.id}" class="w-full text-left flex justify-between items-start">
-        <div><div class="font-semibold text-sm">${esc(s.title||'Sessione')} <span class="text-slate-500">${open?'▾':'▸'}</span></div>
-        <div class="text-xs text-slate-400">${d} · ${nex} esercizi · vol ${formatKg(vol)}kg</div></div>
-        ${s.durationSec?`<div class="text-xs text-slate-500">${Math.round(s.durationSec/60)}′</div>`:''}
+    h += `<div class="mb-6">
+      <button data-expand="${s.id}" class="w-full text-left flex justify-between items-baseline gap-3 active:opacity-55">
+        <span class="min-w-0">
+          <span class="block text-base font-medium text-slate-100 leading-tight">${esc(s.title||'Sessione')}</span>
+          <span class="block text-sm text-slate-500 mt-1">${d} · ${nex} esercizi · ${formatKg(vol)}kg</span>
+        </span>
+        <span class="shrink-0 text-sm text-slate-500 tabular-nums">${s.durationSec?Math.round(s.durationSec/60)+'′ ':''}${open?'▾':'▸'}</span>
       </button>`;
     if(open){
-      h += `<div class="mt-2 pt-2 text-xs space-y-1">`;
+      h += `<div class="mt-3 ml-1">`;
       for(const it of s.items||[]){
         let desc;
         if(it.unit==='kg'){ const st=(it.sets||[]).reduce((a,b)=>((b.w||0)>(a.w||0)?b:a),{w:0,r:0}); desc=`${formatKg(st.w)}kg × ${st.r}`; }
         else if(it.unit==='rip.'){ const mr=Math.max(0,...(it.sets||[]).map(x=>x.r||0)); desc=`${mr} rip.`; }
         else desc=fmtDur(it.value);
-        h += `<div class="flex justify-between"><span class="text-slate-300">${esc(it.nome)}</span><span class="text-slate-400">${desc}${(it.sets||[]).length>1?` · ${it.sets.length} serie`:''}</span></div>`;
+        h += `<div class="flex justify-between gap-3 py-1"><span class="text-sm text-slate-400 min-w-0 truncate">${esc(it.nome)}</span><span class="text-sm text-slate-500 shrink-0 tabular-nums">${desc}${(it.sets||[]).length>1?` · ${it.sets.length} serie`:''}</span></div>`;
         const notes=(it.sets||[]).map(x=>x.note).filter(Boolean);
-        for(const nt of notes){ h += `<div class="text-slate-500 italic pl-2">📝 ${esc(nt)}</div>`; }
+        for(const nt of notes){ h += `<div class="text-sm text-slate-500 italic pl-2 py-0.5">${esc(nt)}</div>`; }
       }
-      h += `<button data-delsession="${s.id}" class="mt-2 w-full bg-red-900/40 text-red-300 rounded py-2">Rimuovi questa sessione</button>`;
+      h += `<button data-delsession="${s.id}" class="text-sm text-slate-500 mt-4 active:opacity-55">Rimuovi questa sessione</button>`;
       h += `</div>`;
     }
     h += `</div>`;
   }
-  h += `</div>`;
-  if(sorted.length>80) h += `<p class="text-xs text-slate-500 mt-3">Mostrate le 80 più recenti di ${sorted.length}.</p>`;
+  if(sorted.length>80) h += `<p class="text-sm text-slate-500 mt-3">Mostrate le 80 più recenti di ${sorted.length}.</p>`;
   return h;
 }
 
 // -------- VIEW: Record --------
 function viewRecord(){
-  let h = `<h1 class="text-lg font-bold mb-1">Record</h1>
-  <p class="text-xs text-slate-400 mb-3">Massimali stimati (Epley) sugli esercizi con carico, o record ripetizioni per il corpo libero.</p>`;
-  // raccolgo tutti gli id apparsi nello storico
+  let h = `<h1 class="text-3xl font-bold mb-2 tracking-tight">Record</h1>
+  <p class="text-base text-slate-400 mb-8 leading-snug">Massimali stimati (Epley) sugli esercizi con carico; record di ripetizioni per il corpo libero.</p>`;
   const seen = new Set();
   for(const s of S.sessions) for(const it of s.items||[]) seen.add(it.id);
   const weighted = [], bw = [];
@@ -1220,39 +1219,40 @@ function viewRecord(){
   weighted.sort((a,b)=>b.pr.e1rm - a.pr.e1rm);
   bw.sort((a,b)=>b.mr.reps - a.mr.reps);
 
-  h += `<div class="text-sm font-semibold text-slate-300 mb-1">Carico</div><div class="space-y-1 mb-4">`;
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Carico</div><div class="mb-10">`;
   for(const x of weighted){
     const open = S.expandedRecord === x.id;
-    h += `<div class="rounded bg-slate-800 surface-soft">
-      <button data-record="${esc(x.id)}" class="w-full flex justify-between items-baseline px-3 py-2 text-left">
-        <span class="text-sm">${esc(x.e.nome)} <span class="text-slate-500 text-xs">${open?'▾':'▸'}</span></span>
-        <span class="text-sm"><b class="text-emerald-400">${formatKg(x.pr.e1rm)}kg</b> <span class="text-xs text-slate-500">da ${formatKg(x.pr.w)}×${x.pr.r}</span></span>
+    h += `<div class="mb-5">
+      <button data-record="${esc(x.id)}" class="w-full flex justify-between items-baseline gap-3 text-left active:opacity-55">
+        <span class="text-base text-slate-100 min-w-0 truncate">${esc(x.e.nome)} <span class="text-sm text-slate-500">${open?'▾':'▸'}</span></span>
+        <span class="shrink-0 text-right leading-none"><span class="text-2xl font-bold text-emerald-400 tabular-nums">${formatKg(x.pr.e1rm)}</span><span class="text-sm text-slate-500"> kg</span><span class="block text-sm text-slate-500 tabular-nums mt-0.5">da ${formatKg(x.pr.w)}×${x.pr.r}</span></span>
       </button>`;
     if(open){
       const prog = progressionSeries(x.id);
-      h += `<div class="px-3 pb-2">`;
+      h += `<div class="mt-2">`;
       if(prog.points.length >= 2){
         h += sparklineVals(prog.points.map(p=>p.val));
         const first=prog.points[0].val, last=prog.points[prog.points.length-1].val;
         const diff=round1(last-first);
-        h += `<div class="text-xs text-slate-400 mt-1">${prog.points.length} sessioni · dalla prima: <b class="${diff>=0?'text-emerald-400':'text-amber-400'}">${diff>=0?'+':''}${formatKg(diff)}kg 1RM</b></div>`;
+        h += `<div class="text-sm text-slate-500 mt-1">${prog.points.length} sessioni · dalla prima <b class="${diff>=0?'text-emerald-400':'text-slate-400'}">${diff>=0?'+':''}${formatKg(diff)}kg 1RM</b></div>`;
       } else {
-        h += `<div class="text-xs text-slate-500">Storico insufficiente per la progressione.</div>`;
+        h += `<div class="text-sm text-slate-500">Storico insufficiente per la progressione.</div>`;
       }
       h += `</div>`;
     }
     h += `</div>`;
   }
-  if(!weighted.length) h += `<p class="text-xs text-slate-500">Nessun carico registrato.</p>`;
+  if(!weighted.length) h += `<p class="text-base text-slate-500">Nessun carico registrato.</p>`;
   h += `</div>`;
 
-  h += `<div class="text-sm font-semibold text-slate-300 mb-1">Corpo libero / tempo</div><div class="space-y-1">`;
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Corpo libero / tempo</div><div>`;
   for(const x of bw.slice(0,40)){
-    h += `<div class="flex justify-between items-baseline rounded bg-slate-800 surface-soft px-3 py-2">
-      <span class="text-sm">${esc(x.e.nome)}</span>
-      <span class="text-sm"><b class="text-emerald-400">${x.mr.reps}</b> <span class="text-xs text-slate-500">${x.e.tipo==='hold'||x.e.tipo==='carry'?'':'rip.'}</span></span>
+    h += `<div class="flex justify-between items-baseline gap-3 mb-4">
+      <span class="text-base text-slate-100 min-w-0 truncate">${esc(x.e.nome)}</span>
+      <span class="shrink-0"><span class="text-2xl font-bold text-emerald-400 tabular-nums">${x.mr.reps}</span><span class="text-sm text-slate-500"> ${x.e.tipo==='hold'||x.e.tipo==='carry'?'':'rip.'}</span></span>
     </div>`;
   }
+  if(!bw.length) h += `<p class="text-base text-slate-500">Nessun record a corpo libero.</p>`;
   h += `</div>`;
   return h;
 }
@@ -1274,26 +1274,28 @@ function bodyweightCard(){
     const first = Number(ms[0].weight_kg), last = Number(ms[ms.length-1].weight_kg);
     const diff = round1(last - first);
     const sign = diff > 0 ? '+' : '';
-    trend = `<div class="text-xs text-slate-400 mt-1">Dall'inizio: <b class="${diff<=0?'text-emerald-400':'text-amber-400'}">${sign}${formatKg(diff)}kg</b> (${ms.length} misure)</div>`;
+    trend = `<div class="text-sm text-slate-500 mt-3">Dall'inizio <b class="${diff<=0?'text-emerald-400':'text-slate-400'}">${sign}${formatKg(diff)}kg</b> · ${ms.length} misure</div>`;
   }
-  let h = `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3">
-    <div class="text-sm font-semibold text-slate-300 mb-2">Peso corporeo</div>
-    <div class="flex items-stretch gap-2 mb-1">
-      <button data-act="bw-dec" class="flex-1 bg-slate-700 rounded py-3 text-xl font-bold">−</button>
-      <div id="valBW" class="flex-1 flex items-center justify-center text-2xl font-bold tabular-nums bg-slate-900 rounded">${formatKg(cur)}</div>
-      <button data-act="bw-inc" class="flex-1 bg-slate-700 rounded py-3 text-xl font-bold">+</button>
+  let h = `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Peso corporeo</div>
+    <div class="flex items-center gap-4 mb-3">
+      <button data-act="bw-dec" class="w-10 py-2 shrink-0 text-3xl text-slate-500 leading-none active:opacity-55">−</button>
+      <div class="flex-1 flex items-baseline justify-center gap-2">
+        <span id="valBW" class="text-5xl font-bold tabular-nums leading-none">${formatKg(cur)}</span>
+        <span class="text-base text-slate-400">kg</span>
+      </div>
+      <button data-act="bw-inc" class="w-10 py-2 shrink-0 text-3xl text-slate-500 leading-none active:opacity-55">+</button>
     </div>
-    <div class="text-xs text-slate-500 mb-2 text-center">kg · passo 0,1</div>
-    <button data-act="bw-save" class="w-full bg-emerald-700 rounded py-2 text-sm font-medium">Registra per oggi (${fmtDate(today)})</button>`;
+    <button data-act="bw-save" class="text-base font-bold text-emerald-400 active:opacity-55">Registra per oggi · ${fmtDate(today)}</button>`;
   h += trend;
   if(ms.length){
     h += sparkline(ms);
-    h += `<div class="mt-2 max-h-40 overflow-y-auto noscroll text-xs space-y-0.5">`;
+    h += `<div class="mt-3 max-h-40 overflow-y-auto noscroll">`;
     for(const m of [...ms].reverse().slice(0,12)){
-      h += `<div class="flex justify-between items-center py-0.5">
-        <span class="text-slate-400">${fmtDate(m.date)}</span>
-        <span class="flex items-center gap-2"><b>${formatKg(Number(m.weight_kg))}kg</b>
-        <button data-bwdel="${esc(m.date)}" class="text-red-400/70">✕</button></span></div>`;
+      h += `<div class="flex justify-between items-baseline py-1">
+        <span class="text-sm text-slate-500">${fmtDate(m.date)}</span>
+        <span class="flex items-baseline gap-3"><b class="text-base tabular-nums text-slate-100">${formatKg(Number(m.weight_kg))}kg</b>
+        <button data-bwdel="${esc(m.date)}" class="text-sm text-slate-500 active:opacity-55">✕</button></span></div>`;
     }
     h += `</div>`;
   }
@@ -1318,7 +1320,7 @@ function sparklineVals(vals){
     return `${round1(x)},${round1(y)}`;
   }).join(' ');
   return `<svg viewBox="0 0 ${W} ${H}" class="w-full mt-2" preserveAspectRatio="none" style="height:48px">
-    <polyline points="${pts}" fill="none" stroke="#BE5B38" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <polyline points="${pts}" fill="none" stroke="#A9481F" stroke-width="2" vector-effect="non-scaling-stroke"/>
   </svg>
   <div class="flex justify-between text-[10px] text-slate-500"><span>${formatKg(min)}kg</span><span>${formatKg(max)}kg</span></div>`;
 }
@@ -1326,46 +1328,54 @@ function sparklineVals(vals){
 // -------- VIEW: Impostazioni --------
 function viewImpostazioni(){
   const c = S.config;
-  let h = `<h1 class="text-lg font-bold mb-3">Configurazione</h1>`;
+  let h = `<h1 class="text-3xl font-bold mb-8 tracking-tight">Configurazione</h1>`;
 
-  // -------- Peso corporeo --------
   h += bodyweightCard();
 
-  h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3 space-y-3">
-    <div>
-      <div class="text-sm text-slate-300 mb-1">Peso bilanciere (kg)</div>
-      <div class="flex gap-2">
-        <button data-act="bar-dec" class="flex-1 bg-slate-700 rounded py-2 text-lg">−</button>
-        <div id="valBAR" class="flex-1 flex items-center justify-center text-xl font-bold bg-slate-900 rounded">${formatKg(c.barWeight)}</div>
-        <button data-act="bar-inc" class="flex-1 bg-slate-700 rounded py-2 text-lg">+</button>
+  // Peso bilanciere
+  h += `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Peso bilanciere</div>
+    <div class="flex items-center gap-4">
+      <button data-act="bar-dec" class="w-10 py-2 shrink-0 text-3xl text-slate-500 leading-none active:opacity-55">−</button>
+      <div class="flex-1 flex items-baseline justify-center gap-2">
+        <span id="valBAR" class="text-4xl font-bold tabular-nums leading-none">${formatKg(c.barWeight)}</span>
+        <span class="text-base text-slate-400">kg</span>
       </div>
-    </div>
-    <div>
-      <div class="text-sm text-slate-300 mb-1">Step peso (+/−)</div>
-      <div class="grid grid-cols-3 gap-2">
-        ${[1,2.5,5].map(v=>`<button data-step="${v}" class="rounded py-2 text-sm ${c.step===v?'bg-emerald-600 font-bold':'bg-slate-700'}">${v}kg</button>`).join('')}
-      </div>
-    </div>
-    <div>
-      <div class="text-sm text-slate-300 mb-1">Dischi disponibili (per lato/pila)</div>
-      <div class="flex flex-wrap gap-2 mb-2">
-        ${c.plates.slice().sort((a,b)=>b-a).map(p=>`<span class="inline-flex items-center gap-1 bg-slate-900 rounded px-2 py-1 text-sm">${formatKg(p)}kg <button data-plate-rm="${p}" class="text-red-400/70">✕</button></span>`).join('')}
-      </div>
-      <div class="grid grid-cols-4 gap-1">
-        ${[25,20,15,10,5,2.5,1.25,0.5].map(p=>`<button data-plate-add="${p}" class="bg-slate-700 rounded py-1.5 text-xs">+${formatKg(p)}</button>`).join('')}
-      </div>
+      <button data-act="bar-inc" class="w-10 py-2 shrink-0 text-3xl text-slate-500 leading-none active:opacity-55">+</button>
     </div>
   </div>`;
 
-  // Backup — i due pulsanti essenziali
-  h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 space-y-2">
-    <div class="text-sm font-semibold text-slate-300">Backup dati</div>
-    <button data-act="export" class="w-full bg-emerald-700 rounded py-3 text-sm font-medium">Esporta backup JSON</button>
-    <button data-act="import" class="w-full bg-slate-700 rounded py-3 text-sm font-medium">Importa backup JSON</button>
-    <input type="file" id="importFile" accept="application/json,.json" class="hidden">
-    <div class="text-xs text-slate-500">Il backup contiene storico, misure e configurazione. L'import sovrascrive i dati attuali.</div>
+  // Step peso
+  h += `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Step peso · incremento</div>
+    <div class="flex gap-8">
+      ${[1,2.5,5].map(v=>`<button data-step="${v}" class="text-xl tabular-nums active:opacity-55 ${c.step===v?'font-bold text-emerald-400':'text-slate-500'}">${v}kg</button>`).join('')}
+    </div>
   </div>`;
-  h += `<p class="text-xs text-slate-600 mt-4 text-center">${S.sessions.length} sessioni · ${Object.keys(S.exercises).length} esercizi in libreria</p>`;
+
+  // Dischi disponibili
+  h += `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Dischi disponibili · per lato</div>
+    <div class="flex flex-wrap gap-x-6 gap-y-3 mb-6">
+      ${c.plates.slice().sort((a,b)=>b-a).map(p=>`<span class="text-lg tabular-nums text-slate-100">${formatKg(p)}<button data-plate-rm="${p}" class="text-sm text-slate-500 ml-1 active:opacity-55">✕</button></span>`).join('')}
+    </div>
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Aggiungi disco</div>
+    <div class="flex flex-wrap gap-x-6 gap-y-3">
+      ${[25,20,15,10,5,2.5,1.25,0.5].map(p=>`<button data-plate-add="${p}" class="text-lg text-emerald-400 tabular-nums active:opacity-55">+${formatKg(p)}</button>`).join('')}
+    </div>
+  </div>`;
+
+  // Backup
+  h += `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-4">Backup dati</div>
+    <div class="flex flex-col gap-5 items-start">
+      <button data-act="export" class="text-xl font-bold text-emerald-400 active:opacity-55">Esporta backup JSON</button>
+      <button data-act="import" class="text-xl text-slate-100 active:opacity-55">Importa backup JSON</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+    <div class="text-sm text-slate-500 mt-4 leading-snug">Il backup contiene storico, misure e configurazione. L'import sovrascrive i dati attuali.</div>
+  </div>`;
+  h += `<p class="text-sm text-slate-500">${S.sessions.length} sessioni · ${Object.keys(S.exercises).length} esercizi in libreria</p>`;
   return h;
 }
 
@@ -1547,7 +1557,7 @@ function bindDragListeners(){
     const el=document.elementFromPoint(e.clientX, e.clientY);
     const row=el?el.closest('[data-exrow]'):null;
     clearDragHighlight();
-    if(row){ dragTo=+row.dataset.exrow; row.style.outline='2px solid #BE5B38'; row.style.outlineOffset='-2px'; }
+    if(row){ dragTo=+row.dataset.exrow; row.style.outline='2px solid #A9481F'; row.style.outlineOffset='-2px'; }
   });
   const endDrag=()=>{
     if(!dragging) return;

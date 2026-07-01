@@ -36,6 +36,17 @@
   .timer-flash { animation: flashbg 0.5s steps(1) infinite; }
   button { touch-action: manipulation; }
   .noscroll { overscroll-behavior: contain; }
+  /* Transizione morbida all'ingresso di ogni schermata (non sugli aggiornamenti interni) */
+  @keyframes viewIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+  .view-anim { animation: viewIn .24s cubic-bezier(.2,.65,.2,1); }
+  @keyframes pressPop { from { transform: scale(.97); } to { transform: none; } }
+  .press-pop { animation: pressPop .18s ease-out; }
+  /* Stacco delle superfici tramite ombra morbida, non tramite linee */
+  .surface { box-shadow: 0 1px 2px rgba(70,56,42,.05), 0 6px 16px rgba(70,56,42,.05); }
+  .surface-soft { box-shadow: 0 1px 3px rgba(70,56,42,.045); }
+  .nav-shadow { box-shadow: 0 -1px 20px rgba(70,56,42,.07); }
+  /* Transizioni leggere sugli elementi interattivi */
+  button, [data-start] { transition: background-color .15s ease, transform .12s ease; }
   /* Sugli accenti pieni scuri (terracotta·ruggine) il testo resta crema; l'ocra chiaro usa testo scuro */
   [class*="bg-emerald-6"],[class*="bg-emerald-7"],[class*="bg-orange-6"]{ color:#FBF3EC; }
   /* Il campo di input eredita il testo scuro del tema */
@@ -56,7 +67,7 @@
 <div id="app" class="mx-auto max-w-md px-3 pb-24 pt-3"></div>
 
 <!-- Nav in fondo -->
-<nav class="fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 z-40" style="padding-bottom: env(safe-area-inset-bottom)">
+<nav class="fixed bottom-0 left-0 right-0 bg-slate-800 nav-shadow z-40" style="padding-bottom: env(safe-area-inset-bottom)">
   <div class="mx-auto max-w-md grid grid-cols-4 text-center text-xs">
     <button data-nav="allena" class="navbtn py-3">Allena</button>
     <button data-nav="storico" class="navbtn py-3">Storico</button>
@@ -414,18 +425,19 @@ $('timerSkip').addEventListener('click', stopTimer);
 function render(){
   const app = $('app');
   document.querySelectorAll('[data-nav]').forEach(b=>{
-    const on = (b.dataset.nav === S.view) || (S.view==='sessione' && b.dataset.nav==='allena') || (S.view==='riepilogo' && b.dataset.nav==='storico') || ((S.view==='teoria'||S.view==='esercizio') && b.dataset.nav==='allena');
+    const on = (b.dataset.nav === S.view) || (S.view==='sessione' && b.dataset.nav==='allena') || (S.view==='anteprima' && b.dataset.nav==='allena') || (S.view==='riepilogo' && b.dataset.nav==='storico') || ((S.view==='teoria'||S.view==='esercizio') && b.dataset.nav==='allena');
     b.className = 'navbtn py-3 ' + (on ? 'text-emerald-400 font-semibold' : 'text-slate-400');
   });
   let top = '';
   if(S.saveError){
-    top += `<div class="mb-3 rounded-lg bg-red-900/50 border border-red-700 p-2 text-xs text-red-200">
+    top += `<div class="mb-3 rounded-lg bg-red-900/50 p-2 text-xs text-red-200">
       ⚠ Non sono riuscito a salvare su questo dispositivo. Esporta un backup prima di continuare, così non perdi nulla.</div>`;
   }
-  top += `<div id="flashHint" class="hidden mb-3 rounded-lg bg-amber-800/60 border border-amber-600 p-2 text-xs text-amber-100"></div>`;
+  top += `<div id="flashHint" class="hidden mb-3 rounded-lg bg-amber-800/60 p-2 text-xs text-amber-100"></div>`;
 
   let body;
   if(S.view==='allena') body = viewAllena();
+  else if(S.view==='anteprima') body = viewAnteprima();
   else if(S.view==='sessione') body = viewSessione();
   else if(S.view==='storico') body = viewStorico();
   else if(S.view==='record') body = viewRecord();
@@ -436,8 +448,14 @@ function render(){
   else body = viewAllena();
 
   app.innerHTML = top + body + (S.picker ? pickerOverlay() : '');
+  // anima l'ingresso solo quando cambia la schermata, non sugli aggiornamenti interni
+  if(_lastRenderedView !== S.view){
+    app.classList.remove('view-anim'); void app.offsetWidth; app.classList.add('view-anim');
+    _lastRenderedView = S.view;
+  }
   bindDynamic();
 }
+let _lastRenderedView = null;
 
 // -------- VIEW: Allena (picker routine) --------
 // ---- Readiness: stato del giorno (euristica trasparente, non medicale) ----
@@ -473,9 +491,10 @@ function readinessCard(){
     sky:['bg-sky-900/30','border-sky-700','text-sky-300'],
     slate:['bg-slate-800','border-slate-700','text-slate-200'],
   };
-  const [bg,bd,tc] = tones[r.tone] || tones.slate;
+  const [bg,,tc] = tones[r.tone] || tones.slate;
+  const soft = r.tone==='slate' ? ' surface-soft' : '';
   // protagonista della home: lo stato di oggi con contrasto di scala, colore come area
-  return `<div class="mb-4 rounded-2xl ${bg} border ${bd} px-4 py-4">
+  return `<div class="mb-5 rounded-2xl ${bg}${soft} px-4 py-4">
     <div class="text-xs uppercase tracking-widest text-slate-500 mb-1">Oggi</div>
     <div class="text-4xl font-bold ${tc} leading-none tracking-tight">${r.state}</div>
     <div class="text-sm text-slate-400 mt-2 leading-snug">${r.msg}</div>
@@ -485,13 +504,13 @@ function readinessCard(){
 function viewAllena(){
   let h = `<h1 class="text-2xl font-bold mb-3 tracking-tight">Allena</h1>`;
   h += readinessCard();
-  h += `<button data-act="open-theory" class="w-full mb-4 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2.5 flex items-center justify-between active:bg-slate-700">
+  h += `<button data-act="open-theory" class="w-full mb-4 rounded-xl bg-slate-800 surface-soft px-3 py-2.5 flex items-center justify-between active:bg-slate-700">
     <span class="flex items-center gap-2"><span class="text-lg">📖</span><span class="text-sm font-medium text-slate-100">Il metodo · teoria e schede</span></span>
     <span class="text-slate-500">›</span>
   </button>`;
   if(S.active){
     const r = S.routines.find(x=>x.id===S.active.routineId);
-    h += `<div class="mb-4 rounded-xl bg-amber-900/40 border border-amber-700 p-3">
+    h += `<div class="mb-4 rounded-xl bg-amber-900/40 p-3">
       <div class="text-sm font-semibold text-amber-200">Sessione in corso</div>
       <div class="text-xs text-amber-100/80 mt-0.5">${esc(S.active.title||(r?r.nome:''))}</div>
       <div class="mt-2 flex gap-2">
@@ -504,36 +523,95 @@ function viewAllena(){
   const reset = S.routines.find(r=>r.kind==='reset') || S.routines.find(r=>r.id==='p0');
 
   h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2 px-1">Scegli una tappa</div>`;
-  h += `<div class="space-y-1.5">`;
-  const tappaRow = (r, id, sub, na, nb) => `<div class="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2.5">
-      <div class="flex items-center justify-between gap-2">
-        <div class="min-w-0">
-          <div class="font-semibold text-sm leading-tight">${esc(sub.titolo)}</div>
-          <div class="text-xs text-slate-500 truncate">${esc(sub.sub)}</div>
-        </div>
-        <div class="flex gap-1.5 shrink-0">
-          <button data-start="${id}" data-variant="attrezzi" class="bg-emerald-600 rounded-lg px-3 min-h-[44px] text-xs font-semibold">Attrezzi<span class="opacity-70"> ${na}</span></button>
-          <button data-start="${id}" data-variant="corpolibero" class="bg-slate-700 rounded-lg px-3 min-h-[44px] text-xs">Libero<span class="opacity-60"> ${nb}</span></button>
-        </div>
-      </div></div>`;
+  h += `<div class="rounded-2xl bg-slate-800 surface-soft overflow-hidden">`;
+  const tappaRow = (id, variant, titolo, sub, nEx) => `<button data-start="${id}" data-variant="${variant}" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-slate-700">
+      <span class="min-w-0">
+        <span class="block font-semibold text-sm leading-tight">${titolo}</span>
+        <span class="block text-xs text-slate-500 truncate mt-0.5">${sub}${nEx?` · ${nEx} es.`:''}</span>
+      </span>
+      <span class="text-slate-400 shrink-0 text-lg">›</span>
+    </button>`;
   for(const r of cavci){
-    h += tappaRow(r, r.id, {titolo:`${r.n}. ${esc(r.nome)}`, sub:r.sub||''}, (r.exAttrezzi||[]).length, (r.exCorpoLibero||[]).length);
+    const dv = (r.exAttrezzi||[]).length ? 'attrezzi' : 'corpolibero';
+    const nEx = Math.max((r.exAttrezzi||[]).length, (r.exCorpoLibero||[]).length);
+    h += tappaRow(r.id, dv, `${r.n}. ${esc(r.nome)}`, esc(r.sub||''), nEx);
   }
   if(reset){
-    h += tappaRow(reset, reset.id, {titolo:esc(reset.nome), sub:reset.sub||'Reset / mobilità'}, (reset.exAttrezzi||[]).length, (reset.exCorpoLibero||[]).length);
+    const dv = (reset.exAttrezzi||[]).length ? 'attrezzi' : 'corpolibero';
+    const nEx = Math.max((reset.exAttrezzi||[]).length, (reset.exCorpoLibero||[]).length);
+    h += tappaRow(reset.id, dv, esc(reset.nome), esc(reset.sub||'Reset / mobilità'), nEx);
   }
   if(manuale){
     const nex = (manuale.blocchi||[]).reduce((a,b)=>a+(b.ex||[]).length,0);
-    h += `<div class="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2.5">
-      <div class="flex items-center justify-between gap-2">
-        <div class="min-w-0">
-          <div class="font-semibold text-sm leading-tight">${manuale.n}. ${esc(manuale.nome)}</div>
-          <div class="text-xs text-slate-500 truncate">${esc(manuale.sub||'')} · ${nex} esercizi</div>
-        </div>
-        <button data-start="${manuale.id}" data-variant="manuale" class="shrink-0 bg-emerald-600 rounded-lg px-4 min-h-[44px] text-xs font-semibold">Avvia</button>
-      </div></div>`;
+    h += tappaRow(manuale.id, 'manuale', `${manuale.n}. ${esc(manuale.nome)}`, esc(manuale.sub||''), nex);
   }
   h += `</div>`;
+  return h;
+}
+
+// -------- VIEW: Anteprima tappa (prima di iniziare) --------
+function viewAnteprima(){
+  const p = S.preview;
+  if(!p){ S.view='allena'; return viewAllena(); }
+  const r = S.routines.find(x=>x.id===p.routineId);
+  if(!r){ S.view='allena'; return viewAllena(); }
+  const A = buildActive(p.routineId, p.variant);
+  const items = A ? A.items : [];
+  const totalSets = items.reduce((a,it)=>a+(it.plannedSets||0),0);
+  const estMin = Math.max(5, Math.round(totalSets * 2)); // stima morbida
+  const hasVarianti = r.kind!=='manuale' && (r.exAttrezzi||[]).length>0 && (r.exCorpoLibero||[]).length>0;
+
+  let h = `<button data-act="preview-back" class="flex items-center gap-1 text-sm text-slate-500 mb-3 -ml-1 px-1 py-1">← Tappe</button>`;
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-1">${r.kind==='manuale'?'Manuale tecnico':(r.n?('Tappa '+r.n):'Sessione')}</div>`;
+  h += `<h1 class="text-2xl font-bold leading-tight mb-1 tracking-tight">${esc(A?A.title:r.nome)}</h1>`;
+  if(r.sub) h += `<p class="text-sm text-slate-400 mb-4 leading-snug">${esc(r.sub)}</p>`;
+
+  // protagonista: quanti esercizi, con durata stimata
+  h += `<div class="rounded-2xl bg-slate-800 surface px-4 py-4 mb-4 flex items-end justify-between">
+    <div>
+      <div class="text-[3.25rem] font-bold tabular-nums leading-none tracking-tight">${items.length}</div>
+      <div class="text-sm text-slate-500 mt-1">esercizi</div>
+    </div>
+    <div class="text-right">
+      <div class="text-2xl font-bold tabular-nums leading-none">~${estMin}′</div>
+      <div class="text-xs text-slate-500 mt-1">${totalSets} serie totali</div>
+    </div>
+  </div>`;
+
+  // scelta variante (se disponibile): attrezzi / corpo libero
+  if(hasVarianti){
+    const opt = (v,label,n)=>`<button data-act="preview-variant" data-variant="${v}" class="flex-1 rounded-xl min-h-[46px] text-sm font-medium ${p.variant===v?'bg-emerald-600':'bg-slate-800 surface-soft text-slate-500'}">${label} <span class="opacity-70">${n}</span></button>`;
+    h += `<div class="flex gap-2 mb-4">
+      ${opt('attrezzi','Attrezzi',(r.exAttrezzi||[]).length)}
+      ${opt('corpolibero','Corpo libero',(r.exCorpoLibero||[]).length)}
+    </div>`;
+  }
+
+  // lista esercizi: righe pulite, separate da spazio, senza divisori
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2 px-1">Cosa farai</div>`;
+  h += `<div class="rounded-2xl bg-slate-800 surface-soft px-1 py-1 mb-5">`;
+  items.forEach((it,i)=>{
+    let param='';
+    if(it.mode==='peso') param = it.targetW>0 ? `${it.plannedSets}×${it.targetR} · ${formatKg(it.targetW)}kg` : `${it.plannedSets}×${it.targetR}`;
+    else if(it.mode==='reps') param = `${it.plannedSets}×${it.targetR}`;
+    else param = `${it.plannedSets}×${fmtDur(it.targetSec)}`;
+    const hasTech = !!(THEORY_DATA.ex && THEORY_DATA.ex[it.id]);
+    h += `<button ${hasTech?`data-exview="${esc(it.id)}"`:'disabled'} class="w-full flex items-center gap-3 px-3 py-2.5 text-left ${hasTech?'active:bg-slate-700 rounded-xl':''}">
+      <span class="w-6 text-center text-sm text-slate-500 tabular-nums shrink-0">${i+1}</span>
+      <span class="flex-1 min-w-0">
+        <span class="block text-sm font-medium leading-tight truncate">${esc(it.nome)}</span>
+        <span class="block text-xs text-slate-500 tabular-nums">${param}</span>
+      </span>
+      ${hasTech?'<span class="text-xs text-emerald-400 shrink-0">scheda ›</span>':''}
+    </button>`;
+    if(i<items.length-1) h += `<div class="h-px bg-slate-900/0 mx-3"></div>`;
+  });
+  if(!items.length) h += `<div class="px-3 py-4 text-sm text-slate-500 text-center">Nessun esercizio in questa variante.</div>`;
+  h += `</div>`;
+
+  // avvio esplicito: il momento in cui decidi tu
+  h += `<button data-act="preview-start" class="w-full bg-emerald-600 active:bg-emerald-700 rounded-2xl py-5 text-lg font-bold press-pop" ${items.length?'':'disabled'}>Inizia sessione</button>`;
+  h += `<div class="text-center text-xs text-slate-500 mt-2 mb-2">Peso e ripetizioni li aggiusti serie per serie, durante l'allenamento.</div>`;
   return h;
 }
 
@@ -614,10 +692,10 @@ function viewSessione(){
   </div>`;
 
   if(A.paused){
-    h += `<div class="mb-3 rounded-lg bg-slate-800/60 border border-slate-700 p-2 text-xs text-slate-300 text-center">In pausa. Riprendi quando sei pronto — il tempo fermo non conta.</div>`;
+    h += `<div class="mb-3 rounded-lg bg-slate-800/60 p-2 text-xs text-slate-300 text-center">In pausa. Riprendi quando sei pronto — il tempo fermo non conta.</div>`;
   }
   if(A.fatigueHint===true){
-    h += `<div class="mb-3 rounded-lg bg-amber-900/40 border border-amber-700 p-3">
+    h += `<div class="mb-3 rounded-lg bg-amber-900/40 p-3">
       <div class="text-sm font-semibold text-amber-200">Il corpo sta chiedendo margine</div>
       <div class="text-xs text-amber-100/80 mt-0.5">Oggi puoi alleggerire il resto o chiudere come sessione leggera. Anche così conta.</div>
       <div class="mt-2 flex gap-2">
@@ -626,7 +704,7 @@ function viewSessione(){
       </div></div>`;
   } else if(A.deloadInfo && A.deloadInfo.suggested && !A.deloadApplied){
     const names = A.deloadInfo.triggered.map(t=>{const x=ex(t.id); return x?x.nome:t.id;}).slice(0,3).join(', ');
-    h += `<div class="mb-3 rounded-lg bg-orange-900/40 border border-orange-700 p-3">
+    h += `<div class="mb-3 rounded-lg bg-orange-900/40 p-3">
       <div class="text-sm font-semibold text-orange-200">Il corpo sta chiedendo margine</div>
       <div class="text-xs text-orange-100/80 mt-0.5">Le ultime sessioni su ${esc(names)} sono in calo. Oggi puoi ridurre il carico senza perdere il filo.</div>
       <div class="mt-2 flex gap-2">
@@ -645,7 +723,7 @@ function viewSessione(){
   </div>`;
 
   // PROTAGONISTA: il valore che stai per fare, con contrasto di scala
-  h += `<div class="rounded-2xl bg-slate-800 border border-slate-700 px-4 py-5 mb-2">`;
+  h += `<div class="rounded-2xl bg-slate-800 surface-soft px-4 py-5 mb-2">`;
   if(it.mode==='peso'){
     h += heroStepper(formatKg(it.targetW), 'kg', 'w-dec', 'w-inc');
     h += `<div class="flex items-center justify-center gap-5 mt-4">
@@ -686,7 +764,7 @@ function viewSessione(){
   const lastDone = it.doneSets[it.doneSets.length-1];
   if(lastDone && lastDone.pr){
     const txt = lastDone.pr.kind==='1rm' ? `Nuovo primato personale — ${formatKg(lastDone.pr.value)}kg stimati` : `Nuovo primato — ${lastDone.pr.value} ripetizioni`;
-    h += `<div class="mb-3 rounded-lg bg-emerald-900/20 border border-emerald-600 p-2 text-sm text-emerald-300 text-center font-semibold">🏆 ${txt}. Hai spostato un limite.</div>`;
+    h += `<div class="mb-3 rounded-lg bg-emerald-900/20 p-2 text-sm text-emerald-300 text-center font-semibold">🏆 ${txt}. Hai spostato un limite.</div>`;
   }
 
   // bottone Serie Completata
@@ -695,7 +773,7 @@ function viewSessione(){
 
   // serie registrate
   if(it.doneSets.length){
-    h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-2 mb-3 text-xs">
+    h += `<div class="rounded-lg bg-slate-800/60 p-2 mb-3 text-xs">
       <div class="text-slate-400 mb-1">Serie registrate</div>`;
     it.doneSets.forEach((d,i)=>{
       let desc = it.mode==='peso' ? `${formatKg(d.w)}kg × ${d.r}` : (it.mode==='reps' ? `${d.r} rip.` : fmtDur(d.sec));
@@ -733,7 +811,7 @@ function viewSessione(){
   h += `</div>`;
 
   // lista esercizi sessione (jump, riordino via drag, aggiungi)
-  h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-2 text-xs">
+  h += `<div class="rounded-lg bg-slate-800/60 p-2 text-xs">
     <div class="flex justify-between items-center mb-1">
       <span class="text-slate-400">Esercizi <span class="text-slate-600">· tieni premuto ⠿ e trascina</span></span>
       <button data-act="open-picker" class="text-emerald-400 font-medium">+ Aggiungi</button>
@@ -777,7 +855,7 @@ function pickerOverlay(){
   if(!list.length) h += `<p class="text-sm text-slate-400 p-2">Nessun esercizio trovato.</p>`;
   for(const e of list){
     const tag = e.equip==='bilanciere'?'bilanciere':(e.equip==='manubrio'?'manubrio':(e.equip==='corpolibero'?'corpo libero':(e.tipo==='hold'||e.tipo==='carry'?'tempo':e.equip)));
-    h += `<button data-addex="${esc(e.id)}" class="block w-full text-left rounded bg-slate-800 border border-slate-700 px-3 py-2">
+    h += `<button data-addex="${esc(e.id)}" class="block w-full text-left rounded bg-slate-800 surface-soft px-3 py-2">
       <div class="text-sm text-slate-100">${esc(e.nome)}</div>
       <div class="text-xs text-slate-500">${esc(tag)}</div>
     </button>`;
@@ -810,7 +888,7 @@ function viewRiepilogo(){
     <div class="text-sm text-slate-500 mt-1">${heroUnit}</div>
   </div>`;
   h += `<div class="text-center text-sm text-slate-400 mb-4 px-4">${esc(su.title)}</div>`;
-  h += `<div class="rounded-2xl bg-slate-800 border border-slate-700 p-3 mb-4 text-center text-sm text-slate-200">${msg}</div>`;
+  h += `<div class="rounded-2xl bg-slate-800 surface-soft p-3 mb-4 text-center text-sm text-slate-200">${msg}</div>`;
   // metriche minori: riga leggera, non quattro quadrati uguali
   const mini = [];
   if(hasVol) mini.push([Math.round(su.durationSec/60)+'′','tempo']);
@@ -823,7 +901,7 @@ function viewRiepilogo(){
   }
   h += `</div>`;
   if(su.prs && su.prs.length){
-    h += `<div class="rounded-lg bg-emerald-900/30 border border-emerald-700 p-3 mb-4">
+    h += `<div class="rounded-lg bg-emerald-900/30 p-3 mb-4">
       <div class="text-sm font-semibold text-emerald-300 mb-1">🏆 Primati di oggi</div>`;
     for(const p of su.prs){
       const v = p.kind==='1rm' ? `${formatKg(p.value)}kg 1RM` : `${p.value} rip.`;
@@ -832,7 +910,7 @@ function viewRiepilogo(){
     h += `</div>`;
   }
   if(su.notes && su.notes.length){
-    h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-3 mb-4">
+    h += `<div class="rounded-lg bg-slate-800/60 p-3 mb-4">
       <div class="text-sm font-semibold text-slate-300 mb-1">📝 Cosa hai annotato</div>`;
     for(const n of su.notes){
       h += `<div class="text-xs text-slate-300 py-0.5"><span class="text-slate-500">${esc(n.nome)}:</span> ${esc(n.note)}</div>`;
@@ -846,7 +924,7 @@ function viewRiepilogo(){
   return h;
 }
 function summaryStat(label, val){
-  return `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 text-center">
+  return `<div class="rounded-lg bg-slate-800 surface-soft p-3 text-center">
     <div class="text-2xl font-bold tabular-nums">${val}</div>
     <div class="text-xs text-slate-400 mt-0.5">${label}</div></div>`;
 }
@@ -881,14 +959,14 @@ function theoryBodyContent(){
   </div>`;
 
   if(tab==='cavci'){
-    h += `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 mb-3 text-sm text-slate-300 leading-relaxed">
+    h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3 text-sm text-slate-300 leading-relaxed">
       <p class="mb-2"><b class="text-slate-100">Rotazione intelligente a 7 tappe</b> più un <b class="text-slate-100">Protocollo 0 (Reset)</b> posturale. Ogni volta il motore propone la tappa successiva rispetto all'ultima svolta: costanza prima di tutto.</p>
       <p class="mb-2"><b class="text-slate-100">Due tracce parallele.</b> <span class="text-slate-400">Attrezzi</span> quando hai la palestra, <span class="text-slate-400">Corpo libero</span> (floor-friendly) quando sei senza: sostitutiva, allenabile 7 giorni.</p>
       <p><b class="text-slate-100">Regole.</b> Tappe di struttura (1·2·3·6) a <b>RPE 7-8</b>, con 1-2 ripetizioni in riserva e recuperi lunghi sulla forza (2-3 min). Tappe jolly (4·5·7) a intensità gestibile, per condizionamento e rigenerazione.</p>
     </div>`;
     const p0 = THEORY_DATA.protocollo0;
     if(p0){
-      h += `<div class="rounded-lg bg-sky-900/20 border border-sky-800 p-3 mb-3">
+      h += `<div class="rounded-lg bg-sky-900/20 p-3 mb-3">
         <div class="text-sm font-semibold text-sky-200">Protocollo 0 · ${esc(p0.sub)}</div>
         <div class="text-xs text-slate-400 mt-0.5 mb-2">Reset posturale ed equilibrio: la base prima delle tappe.</div>`;
       h += theoryExLinks(p0.ex);
@@ -898,7 +976,7 @@ function theoryBodyContent(){
       const r = S.routines.find(x=>x.key===t.key || x.id===t.key);
       const ids = r ? (r.exAttrezzi||[]) : [];
       const badge = t.kind==='struttura' ? 'Struttura · RPE 7-8' : 'Jolly · intensità gestibile';
-      h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-3 mb-2">
+      h += `<div class="rounded-lg bg-slate-800/60 p-3 mb-2">
         <div class="flex items-baseline justify-between">
           <div class="text-sm font-semibold text-slate-100">${t.n}. ${esc(t.nome)}</div>
           <div class="text-[10px] uppercase tracking-wide text-slate-500">${badge}</div>
@@ -909,14 +987,14 @@ function theoryBodyContent(){
     }
   } else {
     const man = THEORY_DATA.manuale;
-    h += `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 mb-3 text-sm text-slate-300 leading-relaxed">
+    h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3 text-sm text-slate-300 leading-relaxed">
       <p><b class="text-slate-100">Manuale Tecnico</b> — 17 esercizi a corpo libero in 4 blocchi, dal riscaldamento al condizionamento. Ogni scheda ha fasi del movimento, errori tipici e correzioni.</p>
     </div>`;
     const rman = S.routines.find(x=>x.kind==='manuale');
     for(const b of man.blocchi){
       const blocco = rman && rman.blocchi ? rman.blocchi.find(x=>x.n===b.n) : null;
       const ids = blocco ? (blocco.ex||[]) : [];
-      h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-3 mb-2">
+      h += `<div class="rounded-lg bg-slate-800/60 p-3 mb-2">
         <div class="text-sm font-semibold text-slate-100">${esc(b.nome)}</div>
         <div class="text-xs text-slate-400 mb-2">${esc(b.desc)}</div>`;
       h += theoryExLinks(ids);
@@ -936,11 +1014,11 @@ function theorySearchResults(q){
   results.sort((a,b)=>a.nome.localeCompare(b.nome));
   let h = `<div class="text-xs text-slate-500 mb-2">${results.length} ${results.length===1?'esercizio trovato':'esercizi trovati'}</div>`;
   if(!results.length){
-    return h + `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-3 text-sm text-slate-400">Nessun esercizio corrisponde. Prova con un altro termine (es. "gluteo", "spinta", "core").</div>`;
+    return h + `<div class="rounded-lg bg-slate-800/60 p-3 text-sm text-slate-400">Nessun esercizio corrisponde. Prova con un altro termine (es. "gluteo", "spinta", "core").</div>`;
   }
   h += `<div class="space-y-1">`;
   for(const e of results){
-    h += `<button data-exsheet="${esc(e.id)}" class="w-full text-left rounded bg-slate-800 border border-slate-700 px-3 py-2">
+    h += `<button data-exsheet="${esc(e.id)}" class="w-full text-left rounded bg-slate-800 surface-soft px-3 py-2">
       <div class="text-sm text-slate-100">${esc(e.nome)}</div>
       <div class="text-xs text-slate-500">${esc(e.categoria||'')}${e.muscoli?` · ${esc(e.muscoli)}`:''}</div>
     </button>`;
@@ -991,7 +1069,7 @@ function viewEsercizio(){
   if(th.respiro) chips.push(['Respiro', th.respiro]);
   if(th.tensione) chips.push(['Tensione', th.tensione]);
   if(chips.length){
-    h += `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 mb-3 space-y-2">`;
+    h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3 space-y-2">`;
     for(const [k,v] of chips){
       h += `<div><div class="text-[10px] uppercase tracking-wide text-slate-500">${k}</div><div class="text-sm text-slate-200">${esc(v)}</div></div>`;
     }
@@ -1004,7 +1082,7 @@ function viewEsercizio(){
       <div class="text-sm font-semibold text-emerald-300 mb-2">Fasi del movimento</div>
       <div class="space-y-2">`;
     th.fasi.forEach((f,i)=>{
-      h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-3">
+      h += `<div class="rounded-lg bg-slate-800/60 p-3">
         <div class="flex gap-2">
           <div class="text-emerald-400 font-bold text-sm">${i+1}</div>
           <div><div class="text-sm font-medium text-slate-100">${esc(f[0])}</div>
@@ -1020,7 +1098,7 @@ function viewEsercizio(){
       <div class="text-sm font-semibold text-amber-300 mb-2">Errori & correzioni</div>
       <div class="space-y-2">`;
     for(const er of th.errori){
-      h += `<div class="rounded-lg bg-amber-900/15 border border-amber-800/50 p-3">
+      h += `<div class="rounded-lg bg-amber-900/15/50 p-3">
         <div class="text-sm text-amber-200">⚠ ${esc(er[0])}</div>
         <div class="text-xs text-slate-300 mt-0.5">→ ${esc(er[1])}</div></div>`;
     }
@@ -1028,7 +1106,7 @@ function viewEsercizio(){
   }
 
   if(!th.fasi && !th.errori && !th.ritmo){
-    h += `<div class="rounded-lg bg-slate-800/60 border border-slate-700 p-3 text-sm text-slate-400">Scheda tecnica dettagliata non disponibile per questo esercizio (proviene dallo storico).</div>`;
+    h += `<div class="rounded-lg bg-slate-800/60 p-3 text-sm text-slate-400">Scheda tecnica dettagliata non disponibile per questo esercizio (proviene dallo storico).</div>`;
   }
   return h;
 }
@@ -1098,14 +1176,14 @@ function viewStorico(){
     const vol = s.volume!=null ? s.volume : sessionVolume(s);
     const nex = (s.items||[]).length;
     const open = S.expandedSession === s.id;
-    h += `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3">
+    h += `<div class="rounded-lg bg-slate-800 surface-soft p-3">
       <button data-expand="${s.id}" class="w-full text-left flex justify-between items-start">
         <div><div class="font-semibold text-sm">${esc(s.title||'Sessione')} <span class="text-slate-500">${open?'▾':'▸'}</span></div>
         <div class="text-xs text-slate-400">${d} · ${nex} esercizi · vol ${formatKg(vol)}kg</div></div>
         ${s.durationSec?`<div class="text-xs text-slate-500">${Math.round(s.durationSec/60)}′</div>`:''}
       </button>`;
     if(open){
-      h += `<div class="mt-2 pt-2 border-t border-slate-700 text-xs space-y-1">`;
+      h += `<div class="mt-2 pt-2 text-xs space-y-1">`;
       for(const it of s.items||[]){
         let desc;
         if(it.unit==='kg'){ const st=(it.sets||[]).reduce((a,b)=>((b.w||0)>(a.w||0)?b:a),{w:0,r:0}); desc=`${formatKg(st.w)}kg × ${st.r}`; }
@@ -1115,7 +1193,7 @@ function viewStorico(){
         const notes=(it.sets||[]).map(x=>x.note).filter(Boolean);
         for(const nt of notes){ h += `<div class="text-slate-500 italic pl-2">📝 ${esc(nt)}</div>`; }
       }
-      h += `<button data-delsession="${s.id}" class="mt-2 w-full bg-red-900/40 border border-red-800 text-red-300 rounded py-2">Rimuovi questa sessione</button>`;
+      h += `<button data-delsession="${s.id}" class="mt-2 w-full bg-red-900/40 text-red-300 rounded py-2">Rimuovi questa sessione</button>`;
       h += `</div>`;
     }
     h += `</div>`;
@@ -1145,7 +1223,7 @@ function viewRecord(){
   h += `<div class="text-sm font-semibold text-slate-300 mb-1">Carico</div><div class="space-y-1 mb-4">`;
   for(const x of weighted){
     const open = S.expandedRecord === x.id;
-    h += `<div class="rounded bg-slate-800 border border-slate-700">
+    h += `<div class="rounded bg-slate-800 surface-soft">
       <button data-record="${esc(x.id)}" class="w-full flex justify-between items-baseline px-3 py-2 text-left">
         <span class="text-sm">${esc(x.e.nome)} <span class="text-slate-500 text-xs">${open?'▾':'▸'}</span></span>
         <span class="text-sm"><b class="text-emerald-400">${formatKg(x.pr.e1rm)}kg</b> <span class="text-xs text-slate-500">da ${formatKg(x.pr.w)}×${x.pr.r}</span></span>
@@ -1170,7 +1248,7 @@ function viewRecord(){
 
   h += `<div class="text-sm font-semibold text-slate-300 mb-1">Corpo libero / tempo</div><div class="space-y-1">`;
   for(const x of bw.slice(0,40)){
-    h += `<div class="flex justify-between items-baseline rounded bg-slate-800 border border-slate-700 px-3 py-2">
+    h += `<div class="flex justify-between items-baseline rounded bg-slate-800 surface-soft px-3 py-2">
       <span class="text-sm">${esc(x.e.nome)}</span>
       <span class="text-sm"><b class="text-emerald-400">${x.mr.reps}</b> <span class="text-xs text-slate-500">${x.e.tipo==='hold'||x.e.tipo==='carry'?'':'rip.'}</span></span>
     </div>`;
@@ -1198,7 +1276,7 @@ function bodyweightCard(){
     const sign = diff > 0 ? '+' : '';
     trend = `<div class="text-xs text-slate-400 mt-1">Dall'inizio: <b class="${diff<=0?'text-emerald-400':'text-amber-400'}">${sign}${formatKg(diff)}kg</b> (${ms.length} misure)</div>`;
   }
-  let h = `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 mb-3">
+  let h = `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3">
     <div class="text-sm font-semibold text-slate-300 mb-2">Peso corporeo</div>
     <div class="flex items-stretch gap-2 mb-1">
       <button data-act="bw-dec" class="flex-1 bg-slate-700 rounded py-3 text-xl font-bold">−</button>
@@ -1253,7 +1331,7 @@ function viewImpostazioni(){
   // -------- Peso corporeo --------
   h += bodyweightCard();
 
-  h += `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 mb-3 space-y-3">
+  h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 mb-3 space-y-3">
     <div>
       <div class="text-sm text-slate-300 mb-1">Peso bilanciere (kg)</div>
       <div class="flex gap-2">
@@ -1280,7 +1358,7 @@ function viewImpostazioni(){
   </div>`;
 
   // Backup — i due pulsanti essenziali
-  h += `<div class="rounded-lg bg-slate-800 border border-slate-700 p-3 space-y-2">
+  h += `<div class="rounded-lg bg-slate-800 surface-soft p-3 space-y-2">
     <div class="text-sm font-semibold text-slate-300">Backup dati</div>
     <button data-act="export" class="w-full bg-emerald-700 rounded py-3 text-sm font-medium">Esporta backup JSON</button>
     <button data-act="import" class="w-full bg-slate-700 rounded py-3 text-sm font-medium">Importa backup JSON</button>
@@ -1301,8 +1379,12 @@ function bindDynamic(){
     const t = ev.target.closest('button');
     if(!t) return;
 
-    // start routine
-    if(t.dataset.start){ startSession(t.dataset.start, t.dataset.variant); return; }
+    // apri anteprima della tappa (non parte subito: prima guardi e decidi)
+    if(t.dataset.start){ openPreview(t.dataset.start, t.dataset.variant); return; }
+    if(t.dataset.act==='preview-variant'){ if(S.preview){ S.preview.variant=t.dataset.variant; saveState(); render(); } return; }
+    if(t.dataset.act==='preview-start'){ if(S.preview){ startSession(S.preview.routineId, S.preview.variant); } return; }
+    if(t.dataset.act==='preview-back'){ S.preview=null; S.view='allena'; saveState(); render(); return; }
+    if(t.dataset.exview){ openExercise(t.dataset.exview, 'anteprima'); return; }
     // resume/discard sessione
     if(t.dataset.act==='resume'){ S.view='sessione'; saveState(); render(); return; }
     if(t.dataset.act==='discard'){ S.active=null; saveState(); render(); return; }
@@ -1478,10 +1560,15 @@ function bindDragListeners(){
   document.addEventListener('pointercancel', ()=>{ dragging=false; dragFrom=null; dragTo=null; clearDragHighlight(); });
 }
 
+function openPreview(routineId, variant){
+  S.preview = { routineId, variant: variant||'attrezzi' };
+  S.view = 'anteprima'; saveState(); render(); window.scrollTo(0,0);
+}
 function startSession(routineId, variant){
   unlockAudio();
   const A = buildActive(routineId, variant);
   if(!A) return;
+  S.preview = null;
   S.active = A; S.view='sessione'; saveState(); render(); window.scrollTo(0,0);
 }
 

@@ -3,27 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#F1EDE4">
+<meta name="theme-color" content="#0D0D14">
 <title>Allenamento</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   // Tema "Caldo diurno": rimappo le scale neutre (slate) e gli accenti su una palette
   // chiara e calda. L'app resta scritta con le stesse classi: cambia solo la palette.
-  // Sistema tipografico su tinta unita. Nessuna superficie: bg #F1EDE4 ovunque.
-  // Testo su due livelli neutri (near-black, taupe) + un accento terracotta. Tre colori, in tinta.
+  // Palette "Gojo": fondo scuro, testo bianco freddo, tre accenti che brillano.
+  // Blue = operativo (azioni, dati) · Purple = il picco (primati, spingi) · Red = il limite (fatica, deload).
   tailwind.config = { theme: { extend: { colors: {
-    slate: { 50:'#2A2721', 100:'#2A2721', 200:'#2A2721', 300:'#6E6252', 400:'#6E6252',
-             500:'#6E6252', 600:'#6E6252', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4', 950:'#F1EDE4' },
-    emerald: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
-               500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
-    amber: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
-             500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
-    orange: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
-              500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
-    sky: { 50:'#A9481F', 100:'#A9481F', 200:'#A9481F', 300:'#A9481F', 400:'#A9481F',
-           500:'#A9481F', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' },
-    red: { 50:'#6E6252', 100:'#6E6252', 200:'#6E6252', 300:'#6E6252', 400:'#6E6252',
-           500:'#6E6252', 600:'#F1EDE4', 700:'#F1EDE4', 800:'#F1EDE4', 900:'#F1EDE4' }
+    slate: { 50:'#F2F3F9', 100:'#F2F3F9', 200:'#F2F3F9', 300:'#9496AE', 400:'#9496AE',
+             500:'#9496AE', 600:'#9496AE', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14', 950:'#0D0D14' },
+    emerald: { 50:'#5AA2FF', 100:'#5AA2FF', 200:'#5AA2FF', 300:'#5AA2FF', 400:'#5AA2FF',
+               500:'#5AA2FF', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' },
+    sky: { 50:'#5AA2FF', 100:'#5AA2FF', 200:'#5AA2FF', 300:'#5AA2FF', 400:'#5AA2FF',
+           500:'#5AA2FF', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' },
+    violet: { 50:'#A97CFF', 100:'#A97CFF', 200:'#A97CFF', 300:'#A97CFF', 400:'#A97CFF',
+              500:'#A97CFF', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' },
+    amber: { 50:'#FF5E7D', 100:'#FF5E7D', 200:'#FF5E7D', 300:'#FF5E7D', 400:'#FF5E7D',
+             500:'#FF5E7D', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' },
+    orange: { 50:'#FF5E7D', 100:'#FF5E7D', 200:'#FF5E7D', 300:'#FF5E7D', 400:'#FF5E7D',
+              500:'#FF5E7D', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' },
+    red: { 50:'#FF5E7D', 100:'#FF5E7D', 200:'#FF5E7D', 300:'#FF5E7D', 400:'#FF5E7D',
+           500:'#FF5E7D', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' }
   }, fontFamily: {
     serif: ['"Times New Roman"','Times','serif'],
     sans: ['ui-sans-serif','-apple-system','system-ui','"Helvetica Neue"','Arial','sans-serif']
@@ -33,9 +35,14 @@
   /* Minimi essenziali: safe-area, reset input, flash timer, testo chiaro sugli accenti pieni */
   html, body { -webkit-text-size-adjust: 100%; }
   body { font-family: 'Times New Roman', Times, serif;
+         text-shadow: 0 1px 2px rgba(0,0,0,.45);
          padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
          padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
          -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+  /* Profondità dosata per scala: i numeri-protagonista hanno un lieve alone freddo (rilievo su fondo scuro) */
+  .text-4xl, .text-5xl, .text-6xl, .text-7xl { text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 0 18px rgba(150,175,255,.14); }
+  /* Le etichette-guida restano nitide, senza ombra */
+  .uppercase { text-shadow: none; }
   /* Le etichette-guida e l'interfaccia usano un sans di sistema: distinguono l'UI dal contenuto */
   .uppercase, nav, input, textarea, .ui-sans { font-family: ui-sans-serif, -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif; }
   input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -55,8 +62,8 @@
   button { transition: opacity .15s ease, transform .12s ease; }
   button:active { opacity: .55; }
   /* I "bottoni pieni" diventano testo-azione in accento su tinta unita, senza contenitore */
-  [class*="bg-emerald-6"],[class*="bg-emerald-7"],[class*="bg-amber-6"],[class*="bg-orange-6"]{ color:#A9481F; font-weight:700; }
-  input, textarea { color:#2A2721; }
+  [class*="bg-emerald-6"],[class*="bg-emerald-7"],[class*="bg-sky-6"]{ color:#5AA2FF; font-weight:700; }
+  input, textarea { color:#F2F3F9; }
 </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
@@ -485,13 +492,14 @@ function computeReadiness(){
   if(rpes.length && (rpes.reduce((a,b)=>a+b,0)/rpes.length) >= 8.7) fatigue += 1;
   if(fatigue >= 3) return { state:'Recupera', msg:'Il corpo sta chiedendo margine. Oggi una sessione leggera vale come una piena.', tone:'orange' };
   if(fatigue >= 1) return { state:'Riduci', msg:'Qualche segnale di fatica. Puoi ridurre il carico e restare nel ritmo.', tone:'amber' };
-  if(daysSince <= 2 && last7 <= 4) return { state:'Spingi', msg:'Sei in una buona finestra. Se te la senti, oggi puoi spingere.', tone:'emerald' };
+  if(daysSince <= 2 && last7 <= 4) return { state:'Spingi', msg:'Sei in una buona finestra. Se te la senti, oggi puoi spingere.', tone:'violet' };
   return { state:'Stai nel piano', msg:'Tutto regolare. Segui il piano di oggi.', tone:'slate' };
 }
 function readinessCard(){
   const r = computeReadiness();
   const tones = {
     emerald:['bg-emerald-900/30','border-emerald-700','text-emerald-300'],
+    violet:['bg-violet-900/30','border-violet-700','text-violet-300'],
     amber:['bg-amber-900/30','border-amber-700','text-amber-300'],
     orange:['bg-orange-900/30','border-orange-700','text-orange-300'],
     sky:['bg-sky-900/30','border-sky-700','text-sky-300'],
@@ -765,7 +773,7 @@ function viewSessione(){
   const lastDone = it.doneSets[it.doneSets.length-1];
   if(lastDone && lastDone.pr){
     const txt = lastDone.pr.kind==='1rm' ? `Nuovo primato personale — ${formatKg(lastDone.pr.value)}kg stimati` : `Nuovo primato — ${lastDone.pr.value} ripetizioni`;
-    h += `<div class="mb-3 rounded-lg bg-emerald-900/20 p-2 text-sm text-emerald-300 text-center font-semibold">${txt}. Hai spostato un limite.</div>`;
+    h += `<div class="mb-3 rounded-lg bg-violet-900/20 p-2 text-sm text-violet-300 text-center font-semibold">${txt}. Hai spostato un limite.</div>`;
   }
 
   // azione: testo grande in accento
@@ -780,7 +788,7 @@ function viewSessione(){
       let desc = it.mode==='peso' ? `${formatKg(d.w)}kg × ${d.r}` : (it.mode==='reps' ? `${d.r} rip.` : fmtDur(d.sec));
       h += `<div class="py-0.5">
         <div class="flex justify-between items-center">
-          <span>${d.pr?'<span class="text-emerald-400 font-semibold">PR</span> · ':''}Serie ${i+1}: ${desc}${d.rpe?` · RPE ${d.rpe}`:''}</span>
+          <span>${d.pr?'<span class="text-violet-400 font-semibold">PR</span> · ':''}Serie ${i+1}: ${desc}${d.rpe?` · RPE ${d.rpe}`:''}</span>
           <span class="flex items-center gap-3">
             <button data-noteedit="${i}" class="text-slate-400">${d.note?'modifica':'nota'}</button>
             <button data-delset="${i}" class="text-red-400/70">✕</button>
@@ -901,10 +909,10 @@ function viewRiepilogo(){
   h += `</div>`;
   if(su.prs && su.prs.length){
     h += `<div class="mb-9">
-      <div class="text-xs uppercase tracking-widest text-emerald-400 mb-3">Primati di oggi</div>`;
+      <div class="text-xs uppercase tracking-widest text-violet-400 mb-3">Primati di oggi</div>`;
     for(const p of su.prs){
       const v = p.kind==='1rm' ? `${formatKg(p.value)}kg 1RM` : `${p.value} rip.`;
-      h += `<div class="text-base text-slate-100 py-1">${esc(p.nome)} — <b class="text-emerald-400">${v}</b></div>`;
+      h += `<div class="text-base text-slate-100 py-1">${esc(p.nome)} — <b class="text-violet-400">${v}</b></div>`;
     }
     h += `</div>`;
   }
@@ -915,7 +923,7 @@ function viewRiepilogo(){
       h += `<div class="text-sm text-slate-400 py-1"><span class="text-slate-500">${esc(n.nome)}:</span> ${esc(n.note)}</div>`;
     }
     if(su.hasFatigue){
-      h += `<div class="text-sm text-emerald-400 mt-3 leading-snug">Hai segnalato un po' di fatica. Il recupero fa parte del piano: se serve, i prossimi giorni tieni il carico morbido.</div>`;
+      h += `<div class="text-sm text-red-400 mt-3 leading-snug">Hai segnalato un po' di fatica. Il recupero fa parte del piano: se serve, i prossimi giorni tieni il carico morbido.</div>`;
     }
     h += `</div>`;
   }
@@ -1320,7 +1328,7 @@ function sparklineVals(vals){
     return `${round1(x)},${round1(y)}`;
   }).join(' ');
   return `<svg viewBox="0 0 ${W} ${H}" class="w-full mt-2" preserveAspectRatio="none" style="height:48px">
-    <polyline points="${pts}" fill="none" stroke="#A9481F" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <polyline points="${pts}" fill="none" stroke="#5AA2FF" stroke-width="2" vector-effect="non-scaling-stroke"/>
   </svg>
   <div class="flex justify-between text-[10px] text-slate-500"><span>${formatKg(min)}kg</span><span>${formatKg(max)}kg</span></div>`;
 }
@@ -1557,7 +1565,7 @@ function bindDragListeners(){
     const el=document.elementFromPoint(e.clientX, e.clientY);
     const row=el?el.closest('[data-exrow]'):null;
     clearDragHighlight();
-    if(row){ dragTo=+row.dataset.exrow; row.style.outline='2px solid #A9481F'; row.style.outlineOffset='-2px'; }
+    if(row){ dragTo=+row.dataset.exrow; row.style.outline='2px solid #5AA2FF'; row.style.outlineOffset='-2px'; }
   });
   const endDrag=()=>{
     if(!dragging) return;

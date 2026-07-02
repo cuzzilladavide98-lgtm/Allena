@@ -502,7 +502,7 @@ function computeReadiness(){
   if(analyzeDeloadAll(S.sessions, recentIds).suggested) fatigue += 2;
   const last7 = sorted.filter(s=>{ const t=new Date(s.date).getTime(); return !isNaN(t) && daysBetween(now,t)<=7; }).length;
   if(last7 >= 5) fatigue += 1;
-  const recentNotes = sorted.slice(0,3).flatMap(s=>(s.items||[]).flatMap(i=>(i.sets||[]).map(x=>x.note).filter(Boolean)));
+  const recentNotes = sorted.slice(0,3).flatMap(s=>[...(s.items||[]).flatMap(i=>(i.sets||[]).map(x=>x.note).filter(Boolean)), s.note].filter(Boolean));
   if(recentNotes.some(n=>FATIGUE_RE.test(n))) fatigue += 2;
   const rpes = sorted.slice(0,3).flatMap(s=>(s.items||[]).map(i=>i.rpe||0)).filter(r=>r>0);
   if(rpes.length && (rpes.reduce((a,b)=>a+b,0)/rpes.length) >= 8.7) fatigue += 1;
@@ -511,6 +511,39 @@ function computeReadiness(){
   if(daysSince <= 2 && last7 <= 4) return { state:'Spingi', msg:'Buona finestra. Se te la senti, spingi.', tone:'violet' };
   return { state:'Stai nel piano', msg:'Segui il piano.', tone:'slate' };
 }
+// ---- Prossima mossa: l'app conosce il ciclo, tu apri e parti ----
+function daysAgoLabel(dateStr){
+  const t = new Date(dateStr).getTime();
+  if(isNaN(t)) return '';
+  const d = Math.max(0, daysBetween(Date.now(), t));
+  return d===0 ? 'oggi' : (d===1 ? 'ieri' : d+' giorni fa');
+}
+function computeNextMove(){
+  const cycle = S.routines.filter(r=>r.kind==='struttura'||r.kind==='jolly').sort((a,b)=>(a.n||99)-(b.n||99));
+  if(!cycle.length) return null;
+  const rd = computeReadiness();
+  // il corpo prima del ciclo: se chiede recupero o rientro, la mossa cambia
+  if(rd.tone==='orange'){
+    const rec = cycle.find(r=>r.id==='recupero');
+    if(rec) return { r: rec, why: 'oggi meglio leggera' };
+  }
+  if(rd.tone==='sky'){
+    const p0 = S.routines.find(r=>r.id==='p0');
+    if(p0) return { r: p0, why: 'rientro morbido' };
+  }
+  // ultima sessione riconducibile a una tappa (per id, o per titolo sullo storico vecchio)
+  const sorted = [...S.sessions].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  let lastR = null, lastS = null;
+  for(const s of sorted){
+    const byId = s.routineId ? cycle.find(r=>r.id===s.routineId) : null;
+    const byTitle = byId ? null : cycle.find(r=> s.title && String(s.title).toLowerCase().includes(String(r.nome).toLowerCase()));
+    if(byId || byTitle){ lastR = byId || byTitle; lastS = s; break; }
+  }
+  if(!lastR) return { r: cycle[0], why: 'si parte dalla prima tappa' };
+  const next = cycle[(cycle.indexOf(lastR)+1) % cycle.length];
+  return { r: next, why: 'il ciclo continua', last: lastR, lastDate: lastS ? lastS.date : null };
+}
+
 function readinessCard(){
   const r = computeReadiness();
   const tones = {
@@ -531,24 +564,38 @@ function readinessCard(){
 
 function viewAllena(){
   let h = readinessCard();
-  h += `<button data-act="open-theory" class="w-full flex items-center justify-between py-3 mb-9 text-left active:opacity-55">
-    <span class="text-base text-slate-100">Il metodo</span>
-    <span class="text-slate-500 text-lg">›</span>
-  </button>`;
+  // ---- azione principale: un tocco e sei dentro ----
   if(S.active){
     const r = S.routines.find(x=>x.id===S.active.routineId);
-    h += `<div class="mb-9">
-      <div class="text-xs uppercase tracking-widest text-emerald-400 mb-2">Sessione in corso</div>
-      <div class="text-lg font-semibold text-slate-100 leading-tight">${esc(S.active.title||(r?r.nome:''))}</div>
-      <div class="mt-3 flex gap-6">
-        <button data-act="resume" class="text-base font-bold text-emerald-400 active:opacity-55">Riprendi</button>
-        <button data-act="discard" class="text-base text-slate-500 active:opacity-55">Annulla</button>
-      </div></div>`;
+    h += `<div class="mb-14">
+      <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">In corso</div>
+      <button data-act="resume" class="block w-full text-left active:opacity-55">
+        <span class="block text-2xl font-bold text-emerald-400 leading-tight">Riprendi sessione →</span>
+        <span class="block text-sm text-slate-500 mt-2">${esc(S.active.title||(r?r.nome:''))}</span>
+      </button>
+      <button data-act="discard" class="text-sm text-slate-500 mt-4 active:opacity-55">Annulla sessione</button>
+    </div>`;
+  } else {
+    const nm = computeNextMove();
+    if(nm){
+      const dv = nm.r.kind==='manuale' ? 'manuale' : ((nm.r.exAttrezzi||[]).length ? 'attrezzi' : 'corpolibero');
+      const titolo = (nm.r.n ? nm.r.n+'. ' : '') + nm.r.nome;
+      const trace = nm.last ? `Ultima: ${esc(nm.last.nome)}${nm.lastDate?' · '+daysAgoLabel(nm.lastDate):''}` : '';
+      const sub = [nm.why, trace].filter(Boolean).join(' — ');
+      h += `<div class="mb-14">
+        <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Prossima</div>
+        <button data-start="${nm.r.id}" data-variant="${dv}" class="block w-full text-left active:opacity-55">
+          <span class="block text-2xl font-bold text-emerald-400 leading-tight">${esc(titolo)} →</span>
+          <span class="block text-sm text-slate-500 mt-2 leading-relaxed">${sub}</span>
+        </button>
+      </div>`;
+    }
   }
   const main = S.routines.filter(r=>r.kind==='struttura'||r.kind==='jolly').sort((a,b)=>(a.n||99)-(b.n||99));
   const manuale = S.routines.find(r=>r.kind==='manuale');
   const reset = S.routines.find(r=>r.kind==='reset') || S.routines.find(r=>r.id==='p0');
 
+  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2">Tutte le tappe</div>`;
   const tappaRow = (id, variant, titolo, sub, nEx) => `<button data-start="${id}" data-variant="${variant}" class="w-full flex items-center justify-between gap-4 py-5 text-left active:opacity-55">
       <span class="min-w-0">
         <span class="block text-base font-medium leading-tight text-slate-100">${titolo}</span>
@@ -570,6 +617,10 @@ function viewAllena(){
     const nex = (manuale.blocchi||[]).reduce((a,b)=>a+(b.ex||[]).length,0);
     h += tappaRow(manuale.id, 'manuale', `${manuale.n}. ${esc(manuale.nome)}`, esc(manuale.sub||''), nex);
   }
+  h += `<button data-act="open-theory" class="w-full flex items-center justify-between py-3 mt-8 text-left active:opacity-55">
+    <span class="text-base text-slate-400">Il metodo</span>
+    <span class="text-slate-500 text-lg">›</span>
+  </button>`;
   return h;
 }
 
@@ -941,6 +992,10 @@ function viewRiepilogo(){
     }
     h += `</div>`;
   }
+  h += `<div class="mb-10">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Com'è andata</div>
+    <input id="snoteInput" type="text" maxlength="140" placeholder="Una riga, se ti va — anche due parole" class="w-full bg-transparent text-base text-slate-100 placeholder-slate-600 pb-2 border-b border-slate-600 focus:outline-none focus:border-emerald-400">
+  </div>`;
   h += `<button data-act="close-summary" class="text-xl font-bold text-emerald-400 py-3 active:opacity-55">Fatto →</button>`;
   return h;
 }
@@ -1328,6 +1383,7 @@ function viewStorico(){
       </button>`;
     if(open){
       h += `<div class="mt-3 ml-1">`;
+      if(s.note) h += `<div class="text-sm text-slate-300 italic leading-relaxed mb-3">"${esc(s.note)}"</div>`;
       for(const it of s.items||[]){
         let desc;
         if(it.unit==='kg'){ const st=(it.sets||[]).reduce((a,b)=>((b.w||0)>(a.w||0)?b:a),{w:0,r:0}); desc=`${formatKg(st.w)}kg × ${st.r}`; }
@@ -1595,7 +1651,7 @@ function bindDynamic(){
       case 'deload-no': A.deloadApplied=true; saveState(); render(); break;
       case 'open-picker': S.picker=true; S.pickerQ=''; render(); break;
       case 'close-picker': S.picker=false; render(); break;
-      case 'close-summary': S.summary=null; S.view='storico'; saveState(); render(); break;
+      case 'close-summary': saveSummaryNote($('snoteInput') ? $('snoteInput').value : ''); S.summary=null; S.view='storico'; saveState(); render(); break;
       case 'bw-save': saveBodyweight(); break;
       case 'export': exportBackup(); break;
       case 'import': $('importFile').click(); break;
@@ -1833,6 +1889,7 @@ function finishSession(){
     id: Date.now(),
     date: now.toISOString().slice(0,19),
     title: A.title || 'Sessione',
+    routineId: A.routineId || null,
     kind: 'forza', status: 'completata',
     durationSec,
     items,
@@ -1851,9 +1908,16 @@ function finishSession(){
   let character = 'full';
   if(prs.length) character = 'pr';
   else if(durationSec < 12*60 || totalSets < 4) character = 'short';
-  S.summary = { title: session.title, date: session.date, volume: session.volume,
+  S.summary = { sessionId: session.id, title: session.title, date: session.date, volume: session.volume,
                 durationSec, exercises: items.length, sets: totalSets, prs, notes, hasFatigue, character };
   S.active = null; stopTimer(); S.view='riepilogo'; saveState(); render(); window.scrollTo(0,0);
+}
+
+function saveSummaryNote(v){
+  v = (v||'').trim();
+  if(!v || !S.summary || !S.summary.sessionId) return;
+  const s = S.sessions.find(x=>x.id===S.summary.sessionId);
+  if(s) s.note = v.slice(0,140);
 }
 
 function saveBodyweight(){

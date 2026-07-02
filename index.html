@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0D0D14">
 <title>Allenamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   // Tema "Caldo diurno": rimappo le scale neutre (slate) e gli accenti su una palette
@@ -27,24 +30,34 @@
     red: { 50:'#FF5E7D', 100:'#FF5E7D', 200:'#FF5E7D', 300:'#FF5E7D', 400:'#FF5E7D',
            500:'#FF5E7D', 600:'#0D0D14', 700:'#0D0D14', 800:'#0D0D14', 900:'#0D0D14' }
   }, fontFamily: {
-    serif: ['"Times New Roman"','Times','serif'],
-    sans: ['ui-sans-serif','-apple-system','system-ui','"Helvetica Neue"','Arial','sans-serif']
+    serif: ['"Space Grotesk"','ui-sans-serif','system-ui','sans-serif'],
+    sans: ['"Space Grotesk"','ui-sans-serif','system-ui','sans-serif']
   } } } };
 </script>
 <style>
   /* Minimi essenziali: safe-area, reset input, flash timer, testo chiaro sugli accenti pieni */
   html, body { -webkit-text-size-adjust: 100%; }
-  body { font-family: 'Times New Roman', Times, serif;
+  /* "Vuoto" (Unlimited Void): lo spazio sprofonda nel nero, il testo è Space Grotesk, i protagonisti brillano */
+  html { background:#0D0D14; min-height:100%; }
+  body { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+         background: radial-gradient(125% 82% at 50% -14%, #16162e 0%, #0D0D14 44%, #06060c 100%) no-repeat fixed;
          text-shadow: 0 1px 2px rgba(0,0,0,.45);
+         text-rendering: optimizeLegibility;
+         font-feature-settings: "kern" 1, "liga" 1, "clig" 1;
+         -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+         letter-spacing: 0;
          padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
          padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
          -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-  /* Profondità dosata per scala: i numeri-protagonista hanno un lieve alone freddo (rilievo su fondo scuro) */
-  .text-4xl, .text-5xl, .text-6xl, .text-7xl { text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 0 18px rgba(150,175,255,.14); }
-  /* Le etichette-guida restano nitide, senza ombra */
+  .tabular-nums { font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "kern" 1, "lnum" 1, "tnum" 1; }
+  /* I numeri-protagonista brillano nel vuoto, del proprio colore (fallback: alone freddo tenue) */
+  .text-4xl, .text-5xl, .text-6xl, .text-7xl { text-shadow: 0 0 22px rgba(140,170,255,.18); }
+  @supports (color: color-mix(in srgb, red, blue)) {
+    .text-4xl, .text-5xl, .text-6xl, .text-7xl { text-shadow: 0 0 34px color-mix(in srgb, currentColor 42%, transparent), 0 0 9px color-mix(in srgb, currentColor 24%, transparent); }
+  }
+  /* Le etichette-guida restano nitide */
   .uppercase { text-shadow: none; }
-  /* Le etichette-guida e l'interfaccia usano un sans di sistema: distinguono l'UI dal contenuto */
-  .uppercase, nav, input, textarea, .ui-sans { font-family: ui-sans-serif, -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif; }
+  .uppercase, nav, input, textarea, .ui-sans { letter-spacing: .02em; }
   input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; }
   @keyframes flashbg { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
@@ -69,7 +82,7 @@
   p { line-height: 1.62; }
 </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
+<body class="text-slate-100 min-h-screen">
 
 <!-- Badge timer fisso in alto -->
 <div id="timerBar" class="hidden fixed top-0 left-0 right-0 z-50" style="padding-top: env(safe-area-inset-top)">
@@ -80,7 +93,7 @@
   </div>
 </div>
 
-<div id="app" class="mx-auto max-w-md px-6 pb-32 pt-10"></div>
+<div id="app" class="mx-auto max-w-md px-7 pb-36 pt-14"></div>
 
 <!-- Nav in fondo -->
 <nav class="fixed bottom-0 left-0 right-0 bg-slate-800 nav-shadow z-40" style="padding-bottom: env(safe-area-inset-bottom)">
@@ -493,10 +506,10 @@ function computeReadiness(){
   if(recentNotes.some(n=>FATIGUE_RE.test(n))) fatigue += 2;
   const rpes = sorted.slice(0,3).flatMap(s=>(s.items||[]).map(i=>i.rpe||0)).filter(r=>r>0);
   if(rpes.length && (rpes.reduce((a,b)=>a+b,0)/rpes.length) >= 8.7) fatigue += 1;
-  if(fatigue >= 3) return { state:'Recupera', msg:'Il corpo sta chiedendo margine. Oggi una sessione leggera vale come una piena.', tone:'orange' };
-  if(fatigue >= 1) return { state:'Riduci', msg:'Qualche segnale di fatica. Puoi ridurre il carico e restare nel ritmo.', tone:'amber' };
-  if(daysSince <= 2 && last7 <= 4) return { state:'Spingi', msg:'Sei in una buona finestra. Se te la senti, oggi puoi spingere.', tone:'violet' };
-  return { state:'Stai nel piano', msg:'Tutto regolare. Segui il piano di oggi.', tone:'slate' };
+  if(fatigue >= 3) return { state:'Recupera', msg:'Oggi va bene leggera.', tone:'orange' };
+  if(fatigue >= 1) return { state:'Riduci', msg:'Puoi ridurre il carico.', tone:'amber' };
+  if(daysSince <= 2 && last7 <= 4) return { state:'Spingi', msg:'Buona finestra. Se te la senti, spingi.', tone:'violet' };
+  return { state:'Stai nel piano', msg:'Segui il piano.', tone:'slate' };
 }
 function readinessCard(){
   const r = computeReadiness();
@@ -509,11 +522,10 @@ function readinessCard(){
     slate:['bg-slate-800','border-slate-700','text-slate-200'],
   };
   const [bg,,tc] = tones[r.tone] || tones.slate;
-  // protagonista della home: lo stato di oggi, gigante. Niente contenitore: solo tipografia e spazio.
-  return `<div class="mb-10">
-    <div class="text-xs uppercase tracking-widest text-slate-500 mb-2">Oggi</div>
+  // protagonista della home: solo lo stato di oggi. Il consiglio compare quando serve (nell'anteprima della tappa), non all'apertura.
+  return `<div class="mb-14">
+    <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Oggi</div>
     <div class="text-5xl font-bold ${tc} leading-none tracking-tight">${r.state}</div>
-    <div class="text-base text-slate-400 mt-3 leading-relaxed">${r.msg}</div>
   </div>`;
 }
 
@@ -533,19 +545,18 @@ function viewAllena(){
         <button data-act="discard" class="text-base text-slate-500 active:opacity-55">Annulla</button>
       </div></div>`;
   }
-  const cavci = S.routines.filter(r=>r.kind==='struttura');
+  const main = S.routines.filter(r=>r.kind==='struttura'||r.kind==='jolly').sort((a,b)=>(a.n||99)-(b.n||99));
   const manuale = S.routines.find(r=>r.kind==='manuale');
   const reset = S.routines.find(r=>r.kind==='reset') || S.routines.find(r=>r.id==='p0');
 
-  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Scegli una tappa</div>`;
-  const tappaRow = (id, variant, titolo, sub, nEx) => `<button data-start="${id}" data-variant="${variant}" class="w-full flex items-center justify-between gap-4 py-4 text-left active:opacity-55">
+  const tappaRow = (id, variant, titolo, sub, nEx) => `<button data-start="${id}" data-variant="${variant}" class="w-full flex items-center justify-between gap-4 py-5 text-left active:opacity-55">
       <span class="min-w-0">
         <span class="block text-base font-medium leading-tight text-slate-100">${titolo}</span>
-        <span class="block text-sm text-slate-500 truncate mt-1">${sub}${nEx?` · ${nEx} es.`:''}</span>
+        <span class="block text-sm text-slate-500 truncate mt-1.5">${sub}${nEx?` · ${nEx} es.`:''}</span>
       </span>
       <span class="text-slate-400 shrink-0 text-lg">›</span>
     </button>`;
-  for(const r of cavci){
+  for(const r of main){
     const dv = (r.exAttrezzi||[]).length ? 'attrezzi' : 'corpolibero';
     const nEx = Math.max((r.exAttrezzi||[]).length, (r.exCorpoLibero||[]).length);
     h += tappaRow(r.id, dv, `${r.n}. ${esc(r.nome)}`, esc(r.sub||''), nEx);
@@ -577,7 +588,9 @@ function viewAnteprima(){
   let h = `<button data-act="preview-back" class="text-sm text-slate-500 mb-6 active:opacity-55">← Tappe</button>`;
   h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-2">${r.kind==='manuale'?'Manuale tecnico':(r.n?('Tappa '+r.n):'Sessione')}</div>`;
   h += `<h1 class="text-3xl font-bold leading-tight tracking-tight">${esc(A?A.title:r.nome)}</h1>`;
-  if(r.sub) h += `<p class="text-base text-slate-400 mt-2 leading-relaxed">${esc(r.sub)}</p>`;
+  const rd = computeReadiness();
+  const rtc = ({emerald:'text-emerald-400',violet:'text-violet-400',amber:'text-red-400',orange:'text-red-400',sky:'text-sky-400',slate:'text-slate-300'})[rd.tone]||'text-slate-300';
+  h += `<p class="text-sm text-slate-400 mt-4 leading-relaxed">Oggi: <span class="${rtc} font-semibold">${esc(rd.state)}</span>. ${esc(rd.msg)}</p>`;
 
   // protagonista: quanti esercizi, con durata stimata di supporto
   h += `<div class="flex items-end justify-between mt-8 mb-9">
@@ -601,7 +614,6 @@ function viewAnteprima(){
   }
 
   // cosa farai: lista in scala, separata da spazio
-  h += `<div class="text-xs uppercase tracking-widest text-slate-500 mb-3">Cosa farai</div>`;
   h += `<div class="mb-10">`;
   items.forEach((it,i)=>{
     let param='';
@@ -623,7 +635,6 @@ function viewAnteprima(){
 
   // avvio esplicito: il momento in cui decidi tu
   h += `<button data-act="preview-start" class="text-2xl font-bold text-emerald-400 py-3 press-pop active:opacity-55" ${items.length?'':'disabled'}>Inizia sessione →</button>`;
-  h += `<div class="text-sm text-slate-500 mt-3">Peso e ripetizioni li aggiusti serie per serie, durante l'allenamento.</div>`;
   return h;
 }
 
@@ -704,7 +715,7 @@ function viewSessione(){
   </div>`;
 
   if(A.paused){
-    h += `<div class="mb-3 rounded-lg bg-slate-800/60 p-2 text-xs text-slate-300 text-center">In pausa. Riprendi quando sei pronto — il tempo fermo non conta.</div>`;
+    h += `<div class="mb-3 rounded-lg bg-slate-800/60 p-2 text-xs text-slate-300 text-center">In pausa · il tempo fermo non conta</div>`;
   }
   if(A.fatigueHint===true){
     h += `<div class="mb-3 rounded-lg bg-amber-900/40 p-3">
@@ -747,7 +758,7 @@ function viewSessione(){
     h += heroStepper(it.targetR, 'rip.', 'r-dec', 'r-inc');
   } else {
     h += heroStepper(it.targetSec, 'sec', 'sec-dec', 'sec-inc');
-    h += `<div class="text-center text-sm text-slate-500 mt-4">Countdown di ${fmtDur(it.targetSec)} · parte al tocco</div>`;
+    h += `<div class="text-center text-sm text-slate-500 mt-4">${fmtDur(it.targetSec)} · parte al tocco</div>`;
   }
   h += `</div>`;
 
@@ -825,7 +836,7 @@ function viewSessione(){
   // lista esercizi sessione (jump, riordino via drag, aggiungi)
   h += `<div class="rounded-lg bg-slate-800/60 p-2 text-xs">
     <div class="flex justify-between items-center mb-1">
-      <span class="text-slate-400">Esercizi <span class="text-slate-600">· tieni premuto ≡ e trascina</span></span>
+      <span class="text-slate-400">Esercizi</span>
       <button data-act="open-picker" class="text-emerald-400 font-medium">+ Aggiungi</button>
     </div>
     <div id="exList">`;
@@ -926,7 +937,7 @@ function viewRiepilogo(){
       h += `<div class="text-sm text-slate-400 py-1"><span class="text-slate-500">${esc(n.nome)}:</span> ${esc(n.note)}</div>`;
     }
     if(su.hasFatigue){
-      h += `<div class="text-sm text-red-400 mt-3 leading-relaxed">Hai segnalato un po' di fatica. Il recupero fa parte del piano: se serve, i prossimi giorni tieni il carico morbido.</div>`;
+      h += `<div class="text-sm text-red-400 mt-3 leading-relaxed">Un po' di fatica: nei prossimi giorni tieni il carico morbido.</div>`;
     }
     h += `</div>`;
   }
